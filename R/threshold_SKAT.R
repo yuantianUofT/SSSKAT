@@ -18,8 +18,8 @@ threshold_SKAT <- function(dat, id.t, thre_value) {
   y <- rep(NA, nrow(dat))
   y[id.t] <- dat$Y[id.t]
   S <- dat$S
-  X <- as.matrix(dat %>% dplyr::select(starts_with('X')))
-  G <- as.matrix(dat %>% dplyr::select(starts_with('G')))
+  X <- as.matrix(dplyr::select(dat, starts_with('X')))
+  G <- as.matrix(dplyr::select(datstarts_with('G')))
 
   # threshold y
   y.s <- rep(0, nrow(dat))
