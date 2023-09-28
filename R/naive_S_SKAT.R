@@ -12,8 +12,8 @@
 naive_SKAT <- function(dat) {
   # data preparation
   S <- dat$S
-  X <- as.matrix(dat %>% dplyr::select(starts_with('X')))
-  G <- as.matrix(dat %>% dplyr::select(starts_with('G')))
+  X <- as.matrix(dplyr::select(dat, starts_with('X')))
+  G <- as.matrix(dplyr::select(dat, starts_with('G')))
 
   # SKAT NULL model
   obj.b <- SKAT_Null_Model(S ~ X, out_type="C", Adjustment = F)
