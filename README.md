@@ -7,7 +7,8 @@ devtools::install_github(repo = "https://github.com/yuantianUofT/SSSKAT")
 ```
 
 # Example
-```{R, eval = FALSE}
+```{R, eval = FALSE
+library(SKAT)
 library(SSSKAT)
 data("example_data")
 analysis_data <- example_data$my_dat
