@@ -8,7 +8,7 @@ Authors@R:
            role = c("aut", "cre"),
            email = "j.gronsbell@utoronto.ca"))
 Description: The package consists the function for Semi-Supervised SKAT (SSSKAT) and other SKAT methods
-Imports: MASS, SKAT, tidyverse
+Imports: MASS, SKAT, dplyr
 Suggests: mvtnorm, matrixStats
 License: GPL-3
 Encoding: UTF-8
