@@ -14,8 +14,8 @@
 labeled_SKAT <- function(dat, id.t) {
   # prepare data
   y.b <- dat$Y[id.t]
-  X <- as.matrix(dat %>% dplyr::select(starts_with('X')))[id.t, ]
-  G <- as.matrix(dat %>% dplyr::select(starts_with('G')))[id.t, ]
+  X <- as.matrix(dplyr::select(dat, starts_with('X')))[id.t, ]
+  G <- as.matrix(dplyr::select(dat, starts_with('G')))[id.t, ]
 
   # SKAT NULL model
   obj.b <- SKAT_Null_Model(y.b ~ X, out_type="D", Adjustment = F)
