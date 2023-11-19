@@ -191,10 +191,140 @@ y.p_NULL <- function(a, b, x) {
 #' @param dat Basis matrix of data set to be analyzed.
 #' @param id.t Row id of labeled data in the dat dataset.
 #' @param theta Distribution parameters.
-#' @return SS_SKAT score
+#' @param w Vector of SNP weights.
+#' @return SS_SKAT score and Q
 #' @noRd
 
-score_fun <- function(dat, id.t, theta) {
+SKATQ_fun <- function(dat, id.t, theta, w = NULL) {
+
+  # data preparation
+  Y <- dat$Y
+  X <- dplyr::select(dat, starts_with('X'))
+  G <- dplyr::select(dat, starts_with('G'))
+  G <- as.matrix(G)
+  S <- dat$S
+  Z <- data.matrix(cbind(1, X))
+  if (is.null(w)) {
+    w <- rep(1, ncol(G))
+  }
+  W <- diag(w)
+  GW <- G %*% W
+
+  # parameters setup
+  alpha <- theta[1:(ncol(X)+1)]
+  m1 <- theta[(ncol(X)+2)]
+  m0 <- theta[(ncol(X)+3)]
+  s1 <- exp(theta[(ncol(X)+4)])
+  s0 <- exp(theta[(ncol(X)+5)])
+
+  # score function
+  if (length(id.t) == 0) {
+    eta2 = Z %*% alpha
+
+    f0 <- dnorm(S, mean=m0, sd=s0)
+    f1 <- dnorm(S, mean=m1, sd=s1)
+
+    c2 = ((f1-f0)*g.logit(eta2)*(1-g.logit(eta2)))/(g.logit(eta2)*f1+(1-g.logit(eta2))*f0)
+
+    c = rep(0, length(S))
+    c = c2
+  } else {
+    eta1 = Z[id.t,] %*% alpha
+    eta2 = Z[-id.t,] %*% alpha
+
+    f0 <- dnorm(S[-id.t], mean=m0, sd=s0)
+    f1 <- dnorm(S[-id.t], mean=m1, sd=s1)
+
+    c1 = (Y[id.t] - g.logit(eta1))
+    c2 = ((f1-f0)*g.logit(eta2)*(1-g.logit(eta2)))/(g.logit(eta2)*f1+(1-g.logit(eta2))*f0)
+
+    c = rep(0, length(S))
+    c[id.t] = c1
+    c[-id.t] = c2
+  }
+
+  # Obtain score
+  score = (t(GW) %*% c)
+  Q = sum(diag(t(GW) %*% c %*% t(c) %*% GW))
+
+  return(list(Q = Q, score = score))
+}
+
+
+#' SS_burden score function
+#' @param dat Basis matrix of data set to be analyzed.
+#' @param id.t Row id of labeled data in the dat dataset.
+#' @param theta Distribution parameters.
+#' @param w Vector of SNP weights.
+#' @return SS_burden score and Q
+#' @noRd
+
+BurdenQ_fun <- function(dat, id.t, theta, w = NULL) {
+
+  # data preparation
+  Y <- dat$Y
+  X <- dplyr::select(dat, starts_with('X'))
+  G <- dplyr::select(dat, starts_with('G'))
+  G <- as.matrix(G)
+  S <- dat$S
+  Z <- data.matrix(cbind(1, X))
+  if (is.null(w)) {
+    w <- rep(1, ncol(G))
+  }
+  W <- diag(w)
+  GW <- as.matrix(G %*% W)
+  G_c <- rowSums(GW)
+
+  # parameters setup
+  alpha <- theta[1:(ncol(X)+1)]
+  m1 <- theta[(ncol(X)+2)]
+  m0 <- theta[(ncol(X)+3)]
+  s1 <- exp(theta[(ncol(X)+4)])
+  s0 <- exp(theta[(ncol(X)+5)])
+
+  # score function
+  if (length(id.t) == 0) {
+    eta2 = Z %*% alpha
+
+    f0 <- dnorm(S, mean=m0, sd=s0)
+    f1 <- dnorm(S, mean=m1, sd=s1)
+
+    c2 = ((f1-f0)*g.logit(eta2)*(1-g.logit(eta2)))/(g.logit(eta2)*f1+(1-g.logit(eta2))*f0)
+
+    c = rep(0, length(S))
+    c = c2
+  } else {
+    eta1 = Z[id.t,] %*% alpha
+    eta2 = Z[-id.t,] %*% alpha
+
+    f0 <- dnorm(S[-id.t], mean=m0, sd=s0)
+    f1 <- dnorm(S[-id.t], mean=m1, sd=s1)
+
+    c1 = (Y[id.t] - g.logit(eta1))
+    c2 = ((f1-f0)*g.logit(eta2)*(1-g.logit(eta2)))/(g.logit(eta2)*f1+(1-g.logit(eta2))*f0)
+
+    c = rep(0, length(S))
+    c[id.t] = c1
+    c[-id.t] = c2
+  }
+
+  # Obtain score
+  score = (t(G_c) %*% c)
+  Q = as.vector(t(G_c) %*% c %*% t(c) %*% G_c)
+
+  return(list(Q = Q, score = score))
+}
+
+
+#' SS_ACAT SNP score function
+#' @param dat Basis matrix of data set to be analyzed.
+#' @param id.t Row id of labeled data in the dat dataset.
+#' @param theta Distribution parameters.
+#' @return SS_ACAT scores and Qs
+#' @noRd
+
+ACATQ_fun <- function(dat, id.t, theta) {
+
   # data preparation
   Y <- dat$Y
   X <- dplyr::select(dat, starts_with('X'))
@@ -238,21 +368,22 @@ score_fun <- function(dat, id.t, theta) {
 
   # Obtain score
   score = (t(G) %*% c)
-  Q = sum(diag(t(G) %*% c %*% t(c) %*% G))
+  Q = score^2
 
-  return(list(Q = Q, score = score))
+  return(list(Q = as.vector(Q), score = as.vector(score)))
 }
+
 
 #' Parametric bootstrap to obtain SS_SKAT score under the null
 #' @param dat Basis matrix of data set to be analyzed.
 #' @param id.t Row id of labeled data in the dat dataset.
 #' @param full_eval Full optimization iteration, default to be TRUE.
 #' @param theta Distribution parameters.
-#' @return Parametric bootstrap SS_SKAT score
+#' @param testtype Type of test, default is "all", can also be "SKAT", "Burden", "ACAT"
+#' @return Parametric bootstrap SS test score
 #' @noRd
 
-boot_Q <- function(dat, id.t,
-                   full_eval = F, theta = NULL) {
+boot_Q <- function(dat, id.t, full_eval = F, theta = NULL, testtype = "all", ACATweights, SKATweights, Burdenweights) {
   # data preparation
   X <- dplyr::select(dat, starts_with('X'))
   X <- as.matrix(X)
@@ -278,10 +409,123 @@ boot_Q <- function(dat, id.t,
   newdat <- cbind(newY, X, G, newS)
   colnames(newdat)[1] <- "Y"
   colnames(newdat)[ncol(newdat)] <- "S"
-  newmy_score <- score_fun(dat=newdat, id.t=id.t, theta=theta)$Q
+  if (testtype == "all") {
+    newSKATscoreQ <- SKATQ_fun(dat=newdat, id.t=id.t, theta=theta, w = SKATweights)$Q
+    newBurdenscoreQ <- BurdenQ_fun(dat=newdat, id.t=id.t, theta=theta, w = Burdenweights)$Q
+    newACATscoreQs <- ACATQ_fun(dat=newdat, id.t=id.t, theta=theta)$Q
+    newmy_score <- list(newSKATscoreQ = newSKATscoreQ, newBurdenscoreQ = newBurdenscoreQ, newACATscoreQs = newACATscoreQs)
+  } else if (testtype == "SKAT") {
+    newSKATscoreQ <- SKATQ_fun(dat=newdat, id.t=id.t, theta=theta, w = SKATweights)$Q
+    newmy_score <- list(newSKATscoreQ = newSKATscoreQ)
+  } else if (testtype == "Burden") {
+    newBurdenscoreQ <- BurdenQ_fun(dat=newdat, id.t=id.t, theta=theta, w = Burdenweights)$Q
+    newmy_score <- list(newBurdenscoreQ = newBurdenscoreQ)
+  } else if (testtype == "ACAT") {
+    newACATscoreQs <- ACATQ_fun(dat=newdat, id.t=id.t, theta=theta)$Q
+    newmy_score <- list(newACATscoreQs = newACATscoreQs)
+  }
 
   # bootstrap SS_SKAT score under the null
   return(newmy_score)
 }
 
 
+#' Weights function for ACAT
+#' @param G Genotype matrix.
+#' @weights.beta Weights beta parameters.
+#' @return ACAT weights
+#' @noRd
+
+ACATW_func <- function(G, weights.beta) {
+
+  mac <- Matrix::colSums(G)
+  n <- nrow(G)
+  MAF <- mac/(2 * n)
+
+  W <- (dbeta(MAF, weights.beta[1], weights.beta[2])/dbeta(MAF, 0.5, 0.5))^2
+
+  return(W)
+}
+
+#' Weights function for Burden or SKAT
+#' @param G Genotype matrix.
+#' @param weights.beta Weights beta parameters.
+#' @return Burden or SKAT weights
+#' @noRd
+
+SKATBurdenW_func <- function(G, weights.beta) {
+
+  MAF <- Matrix::colSums(G)/(2 * dim(G)[1])
+  W <- dbeta(MAF, weights.beta[1], weights.beta[2])
+
+  return(W)
+}
+
+
+#' ACAT function to combine SNP pvalues
+#' @param Pvals Single SNP pvalues to be combined
+#' @param weights ACAT weights
+#' @param is.check Check pvalues
+#' @return ACAT_V combined pvalue
+#' @noRd
+
+ACAT <- function (Pvals, weights = NULL, is.check = F) {
+  Pvals <- as.matrix(Pvals)
+  if (is.check) {
+    if (sum(is.na(Pvals)) > 0) {
+      stop("Cannot have NAs in the p-values!")
+    }
+    if ((sum(Pvals < 0) + sum(Pvals > 1)) > 0) {
+      stop("P-values must be between 0 and 1!")
+    }
+    is.zero <- (colSums(Pvals == 0) >= 1)
+    is.one <- (colSums(Pvals == 1) >= 1)
+    if (sum((is.zero + is.one) == 2) > 0) {
+      stop("Cannot have both 0 and 1 p-values in the same column!")
+    }
+    if (sum(is.zero) > 0) {
+      warning("There are p-values that are exactly 0!")
+    }
+    if (sum(is.one) > 0) {
+      warning("There are p-values that are exactly 1!")
+    }
+  }
+  if (is.null(weights)) {
+    is.weights.null <- TRUE
+  }
+  else {
+    is.weights.null <- FALSE
+    weights <- as.matrix(weights)
+    if (sum(dim(weights) != dim(Pvals)) > 0) {
+      stop("The dimensions of weights and Pvals must be the same!")
+    }
+    else if (is.check & (sum(weights < 0) > 0)) {
+      stop("All the weights must be nonnegative!")
+    }
+    else {
+      w.sum <- colSums(weights)
+      if (sum(w.sum <= 0) > 0) {
+        stop("At least one weight should be positive in each column!")
+      }
+      else {
+        for (j in 1:ncol(weights)) {
+          weights[, j] <- weights[, j]/w.sum[j]
+        }
+      }
+    }
+  }
+  is.small <- (Pvals < 1e-15)
+  if (is.weights.null) {
+    Pvals[!is.small] <- tan((0.5 - Pvals[!is.small]) * pi)
+    Pvals[is.small] <- 1/Pvals[is.small]/pi
+    cct.stat <- colMeans(Pvals)
+  }
+  else {
+    Pvals[!is.small] <- weights[!is.small] * tan((0.5 - Pvals[!is.small]) *
+                                                   pi)
+    Pvals[is.small] <- (weights[is.small]/Pvals[is.small])/pi
+    cct.stat <- colSums(Pvals)
+  }
+  pval <- pcauchy(cct.stat, lower.tail = F)
+  return(pval)
+}
