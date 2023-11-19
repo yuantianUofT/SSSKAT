@@ -75,25 +75,25 @@ SS_test <- function(dat, id.t, obsweights = NULL, weights.beta = NULL,
     Burdenboot_scores <- unlist(lapply(1:length(boot_scores),function(x) boot_scores[[x]]$newBurdenscoreQ))
     ACATboot_scores <- matrix(unlist(lapply(1:length(boot_scores),function(x) boot_scores[[x]]$newACATscoreQs)), nrow = length(boot_scores), byrow = T)
 
-    SKATpvalue <- length(which(SKATboot_scores > scoreQ$SKATscoreQ))/length(SKATboot_scores)
-    Burdenpvalue <- length(which(Burdenboot_scores > scoreQ$BurdenscoreQ))/length(Burdenboot_scores)
+    SKAT_p <- length(which(SKATboot_scores > scoreQ$SKATscoreQ))/length(SKATboot_scores)
+    Burden_p <- length(which(Burdenboot_scores > scoreQ$BurdenscoreQ))/length(Burdenboot_scores)
     ACATpvalues <- 1 - sapply(1:length(scoreQ$ACATscoreQs), function(j) mean(ACATboot_scores[, j] <= scoreQ$ACATscoreQs[j]))
-    ACATpvalue <- ACAT(ACATpvalues, ACATweights)
+    ACAT_p <- ACAT(ACATpvalues, ACATweights)
 
-    pvalue <- c(SKATpvalue = SKATpvalue, Burdenpvalue = Burdenpvalue, ACATpvalue = ACATpvalue)
+    pvalue <- c(SKAT_p = SKAT_p, Burden_p = Burden_p, ACAT_p = ACAT_p)
   } else if (testtype == "SKAT") {
     SKATboot_scores <- unlist(lapply(1:length(boot_scores),function(x) boot_scores[[x]]$newSKATscoreQ))
-    SKATpvalue <- length(which(SKATboot_scores > scoreQ$SKATscoreQ))/length(SKATboot_scores)
-    pvalue <- c(SKATpvalue = SKATpvalue)
+    SKAT_p <- length(which(SKATboot_scores > scoreQ$SKATscoreQ))/length(SKATboot_scores)
+    pvalue <- c(SKAT_p = SKAT_p)
   } else if (testtype == "Burden") {
     Burdenboot_scores <- unlist(lapply(1:length(boot_scores),function(x) boot_scores[[x]]$newBurdenscoreQ))
-    Burdenpvalue <- length(which(Burdenboot_scores > scoreQ$BurdenscoreQ))/length(Burdenboot_scores)
-    pvalue <- c(Burdenpvalue = Burdenpvalue)
+    Burden_p <- length(which(Burdenboot_scores > scoreQ$BurdenscoreQ))/length(Burdenboot_scores)
+    pvalue <- c(Burden_p = Burden_p)
   } else if (testtype == "ACAT") {
     ACATboot_scores <- matrix(unlist(lapply(1:length(boot_scores),function(x) boot_scores[[x]]$newACATscoreQs)), nrow = length(boot_scores), byrow = T)
     ACATpvalues <- 1 - sapply(1:length(scoreQ$ACATscoreQs), function(j) mean(ACATboot_scores[, j] <= scoreQ$ACATscoreQs[j]))
-    ACATpvalue <- ACAT(ACATpvalues, ACATweights)
-    pvalue <- c(ACATpvalue = ACATpvalue)
+    ACAT_p <- ACAT(ACATpvalues, ACATweights)
+    pvalue <- c(ACAT_p = ACAT_p)
   }
 
 

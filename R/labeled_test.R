@@ -35,10 +35,10 @@ labeled_test <- function(dat, id.t, weights.beta = NULL) {
   Burden_result <- SKAT(G, obj.b, method="davies", r.corr = 1, weights=Burdenweights)
 
   # ACAT NULL model
-  G <- Matrix::Matrix(G)
+  G <- Matrix::Matrix(G, sparse = TRUE)
   obj <- ACAT::NULL_Model(y.b, X)
   ACAT_result <- ACAT::ACAT_V(G,obj)
 
-  result <- list(SKAT_result = SKAT_result$p.value, Burden_result = Burden_result$p.value, ACAT_result = ACAT_result)
+  result <- list(SKAT_p = SKAT_result$p.value, Burden_p = Burden_result$p.value, ACAT_p = ACAT_result)
   return(result)
 }

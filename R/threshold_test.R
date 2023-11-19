@@ -27,6 +27,16 @@ threshold_test <- function(dat, id.t, thre_value, weights.beta = NULL) {
   y.s[which(S > thre_value)] <- 1
   y[which(is.na(y))] <- y.s[which(is.na(y))]
 
+  if (is.null(weights.beta)) {
+    ACATweights <- rep(1, ncol(G))
+    SKATweights <- rep(1, ncol(G))
+    Burdenweights <- rep(1, ncol(G))
+  } else {
+    ACATweights <- ACATW_func(G, weights.beta)
+    SKATweights <- SKATBurdenW_func(G, weights.beta)
+    Burdenweights <- SKATBurdenW_func(G, weights.beta)
+  }
+
   # SKAT and Burden NULL model
   obj.b <- SKAT_Null_Model(y ~ X, out_type="D", Adjustment = F)
   # SKAT results
@@ -35,11 +45,11 @@ threshold_test <- function(dat, id.t, thre_value, weights.beta = NULL) {
   Burden_result <- SKAT(G, obj.b, method="davies", r.corr = 1, weights=Burdenweights)
 
   # ACAT NULL model
-  G <- Matrix::Matrix(G)
+  G <- Matrix::Matrix(G, sparse = TRUE)
   obj <- ACAT::NULL_Model(y, X)
   ACAT_result <- ACAT::ACAT_V(G,obj)
 
-  result <- list(SKAT_result = SKAT_result$p.value, Burden_result = Burden_result$p.value, ACAT_result = ACAT_result)
+  result <- list(SKAT_p = SKAT_result$p.value, Burden_p = Burden_result$p.value, ACAT_p = ACAT_result)
   return(result)
 
 }
