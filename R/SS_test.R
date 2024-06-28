@@ -1,102 +1,174 @@
-# Updated: 2023-09-19
+# Updated: 2024-06-27
 
 #' Semi-supervised association test function
 #'
-#' @param dat Basis matrix of data set to be analyzed.
-#' @param id.t Row id of labeled data in the dat dataset.
-#' @param obsweights Weights of the sample, default treat samples equally.
+#' @param Y Binary response variable
+#' @param X Covariates
+#' @param G Genotype data
+#' @param S Continuous surrogate
+#' @param id.t Row id of labeled data in the dataset.
+#' @param para_results Saved parametric boostrapped individual c value matrix.
+#' @param wBurden Vector of SNP burden weights.
+#' @param wSKAT Vector of SNP SKAT weights.
+#' @param wACAT Vector of SNP ACAT weights.
 #' @param weights.beta Weights of the SNPs, default NULL treat the SNPs equally, else take parameters of beta distribution.
+#' @param mac.thresh A threshold of the minor allele count (MAC). The Burden test will be used to aggregate the SNPs with MAC less than this threshold.
 #' @param full_NR_evaluation Full optimization iteration, default to be TRUE.
 #' @param nit Number of iteration for optimization if full_NR_evaluation is FALSE.
 #' @param NULL_nlog_like Function to be optimized, predefined, no need to change
-#' @param prev_est Estimate of prevalence.
-#' @param testtype Type of test, default is "all", can also be "SKAT", "Burden", "ACAT"
-#' @param nboot Number of bootstrap of pvalue calculate.
-#' @return Parameter estimates, SS SKAT score and SS SKAT pvalue.
-#' @examples
-#' analysis_data <- example_data$my_dat;
-#' labeled_data_id <- example_data$id.t;
-#' SS_SKAT_results <- SS_SKAT(dat = analysis_data, id.t = labeled_data_id, weights = NULL, full_NR_evaluation = TRUE, NULL_nlog_like = NULL_nlog_like, prev_est = mean(analysis_data$Y[labeled_data_id]), nboot = 50);
+#' @param testtype Type of test, default is "all", can also be "SKAT", "Burden", "ACAT".
+#' @param boot Whether perform parametric bootstrap, default is TRUE.
+#' @return Total sample size, parameter estimates, SS scores, SS score variance, SS pvalues, weights used in each test and weights.beta.
 #' @export
 
 
-SS_test <- function(dat, id.t, obsweights = NULL, weights.beta = NULL,
-                    full_NR_evaluation = TRUE, nit = NULL,
-                    NULL_nlog_like, prev_est, testtype = "all",
-                    nboot) {
-
+SS_test <- function(Y, X, G, S, id.t, para_results, wBurden = NULL, wSKAT = NULL, wACAT = NULL, weights.beta = NULL, mac.thresh = 10,
+                    full_NR_evaluation = TRUE, nit = NULL, NULL_nlog_like, 
+                    testtype = "all", boot = T) {
+  if (! testtype %in% c("all", "SKAT", "Burden", "ACAT")) {
+    stop("testtype is not correctly specified")
+  }
   # data preparation
-  Y <- dat$Y
-  X <- dplyr::select(dat, starts_with('X'))
-  G <- dplyr::select(dat, starts_with('G'))
-  G <- as.matrix(G)
-  S <- dat$S
   Z <- data.matrix(cbind(1, X))
-  if (is.null(weights.beta)) {
-    ACATweights <- rep(1, ncol(G))
-    SKATweights <- rep(1, ncol(G))
-    Burdenweights <- rep(1, ncol(G))
-  } else {
-    ACATweights <- ACATW_func(G, weights.beta)
-    SKATweights <- SKATBurdenW_func(G, weights.beta)
-    Burdenweights <- SKATBurdenW_func(G, weights.beta)
+  if (testtype %in% c("all", "ACAT")) {
+    is.very.rare <- rare_func(G, mac.thresh)
   }
-
+  
   # parameter estimates
-  theta_est <- ssl_theta(dat=dat, id.t=id.t, weights = obsweights, full_eval = full_NR_evaluation, nit = nit,
-                         NULL_nlog_like = NULL_nlog_like, prev_est = prev_est)$final_est
-
-  # bootstrap
-  boot_scores <- lapply(1:nboot, function(x) boot_Q(dat = dat, id.t = id.t, theta = theta_est, testtype = testtype,
-                                                    ACATweights = ACATweights, SKATweights = SKATweights, Burdenweights = Burdenweights,
-                                                    x))
-
-  # SS SKAT score
-  if (testtype == "all") {
-    SKATscoreQ <- SKATQ_fun(dat=dat, id.t=id.t, theta=theta_est, w = SKATweights)$Q
-    BurdenscoreQ <- BurdenQ_fun(dat=dat, id.t=id.t, theta=theta_est, w = Burdenweights)$Q
-    ACATscoreQs <- ACATQ_fun(dat=dat, id.t=id.t, theta=theta_est)$Q
-    scoreQ <- list(SKATscoreQ = SKATscoreQ, BurdenscoreQ = BurdenscoreQ, ACATscoreQs = ACATscoreQs)
-  } else if (testtype == "SKAT") {
-    SKATscoreQ <- SKATQ_fun(dat=dat, id.t=id.t, theta=theta_est, w = SKATweights)$Q
-    scoreQ <- list(SKATscoreQ = SKATscoreQ)
-  } else if (testtype == "Burden") {
-    BurdenscoreQ <- BurdenQ_fun(dat=dat, id.t=id.t, theta=theta_est, w = Burdenweights)$Q
-    scoreQ <- list(BurdenscoreQ = BurdenscoreQ)
-  } else if (testtype == "ACAT") {
-    ACATscoreQs <- ACATQ_fun(dat=dat, id.t=id.t, theta=theta_est)$Q
-    scoreQ <- list(ACATscoreQs = ACATscoreQs)
+  theta_est <- ssl_theta(Y = Y, X = X, S = S, Z = Z, id.t = id.t, full_eval = full_NR_evaluation, nit = nit,
+                         NULL_nlog_like = NULL_nlog_like)$final_est
+  cvalue <- c_func(Y, X, S, Z, id.t, theta = theta_est)
+  
+  # weights
+  if (is.null(wBurden) & is.null(wSKAT) & is.null(wACAT)) {
+    wBurden <- SKATBurdenW_func(G, weights.beta)
+    wSKAT <- wBurden
+    wACAT <- ACATW_func(G, is.very.rare, wBurden, weights.beta)
+  } else if ((!is.null(wBurden)) & is.null(wSKAT) & is.null(wACAT)) {
+    wSKAT <- wBurden
+    wACAT <- ACATW_func(G, is.very.rare, wBurden, weights.beta)
+  } else if (is.null(wBurden) & (!is.null(wSKAT)) & is.null(wACAT)) {
+    wBurden <- wSKAT
+    wACAT <- ACATW_func(G, is.very.rare, wBurden, weights.beta)
+  } else if (is.null(wBurden) & is.null(wSKAT) & (!is.null(wACAT))) {
+    wBurden <- SKATBurdenW_func(G, weights.beta)
+    wSKAT <- wBurden
+  } else if (is.null(wBurden) & (!is.null(wSKAT)) & (!is.null(wACAT))) {
+    wBurden <- wSKAT
+  } else if ((!is.null(wBurden)) & is.null(wSKAT) & (!is.null(wACAT))) {
+    wSKAT <- wBurden
+  } else if ((!is.null(wBurden)) & (!is.null(wSKAT)) & is.null(wACAT)) {
+    wACAT <- ACATW_func(G, is.very.rare, wBurden, weights.beta)
   }
-
-
-  # pvalue estimate
+  
   if (testtype == "all") {
-    SKATboot_scores <- unlist(lapply(1:length(boot_scores),function(x) boot_scores[[x]]$newSKATscoreQ))
-    Burdenboot_scores <- unlist(lapply(1:length(boot_scores),function(x) boot_scores[[x]]$newBurdenscoreQ))
-    ACATboot_scores <- matrix(unlist(lapply(1:length(boot_scores),function(x) boot_scores[[x]]$newACATscoreQs)), nrow = length(boot_scores), byrow = T)
-
-    SKAT_p <- length(which(SKATboot_scores > scoreQ$SKATscoreQ))/length(SKATboot_scores)
-    Burden_p <- length(which(Burdenboot_scores > scoreQ$BurdenscoreQ))/length(Burdenboot_scores)
-    ACATpvalues <- 1 - sapply(1:length(scoreQ$ACATscoreQs), function(j) mean(ACATboot_scores[, j] <= scoreQ$ACATscoreQs[j]))
-    ACAT_p <- ACAT(ACATpvalues, ACATweights)
-
+    
+    # scores
+    SKATscore <- SKATQ_fun(G, cvalue, wSKAT)
+    Burdenscore <- BurdenQ_fun(G, cvalue, wBurden)
+    ACATscore <- ACATsingleQ_fun(G, cvalue)
+    scoreQ <- list(SKATscoreQ = SKATscore$Q, BurdenscoreQ = Burdenscore$Q, ACATscoreQs = ACATscore$Q)
+    
+    # Scovs
+    if (boot == T) {
+      Scovs <- Var_boot(G, cvalues = para_results, is.very.rare, mac.thresh, wBurden, wSKAT, type=testtype)
+      SKAT_Scov <- Scovs$SKATSvar
+      Burden_Scov <- Scovs$BurdenSvar
+      ACAT_Scov <- Scovs$ACATSvar
+    } else {
+      SKAT_Scov <- SKATSVar_fun(G, cvalue, wSKAT, Gindep)
+      Burden_Scov <- BurdenSVar_fun(G, cvalue, wBurden, Gindep)
+      ACAT_Scov <- ACATSVar_fun(G, cvalue, is.very.rare, mac.thresh, wBurden, Gindep)
+      Scovs <- list(SKAT_Scov = SKAT_Scov, Burden_Scov = Burden_Scov, ACAT_Scov = ACAT_Scov)
+    }
+    
+    # pvalues
+    Liu_result <- Liu(A = diag(ncol(SKAT_Scov)), X_Sigma = SKAT_Scov, X_mu = rep(0, ncol(SKAT_Scov)), X = unlist(SKATscore$score))
+    SKAT_p <- unlist(Liu_result$pvalue)
+    Burden_p <- Burden(S = Burdenscore$score, sigma = Burden_Scov)
+    ACATpvalues <- mapply(Burden, ACATscore$score, ACAT_Scov)
+    is.keep <- rep(T, length(ACATpvalues))
+    is.keep[which(ACATpvalues == 1)] <- F
+    ACAT_p <- ACAT(Pvals=ACATpvalues[is.keep], weights=wACAT[is.keep])
     pvalue <- c(SKAT_p = SKAT_p, Burden_p = Burden_p, ACAT_p = ACAT_p)
+    
+    # final weights
+    weights <- list(wSKAT = wSKAT, wBurden = wBurden, wACAT = wACAT[is.keep])
+    
   } else if (testtype == "SKAT") {
-    SKATboot_scores <- unlist(lapply(1:length(boot_scores),function(x) boot_scores[[x]]$newSKATscoreQ))
-    SKAT_p <- length(which(SKATboot_scores > scoreQ$SKATscoreQ))/length(SKATboot_scores)
+    
+    # scores
+    SKATscore <- SKATQ_fun(G, cvalue, wSKAT)
+    scoreQ <- list(SKATscoreQ = SKATscore$Q)
+    
+    # Scovs
+    if (boot == T) {
+      Scovs <- Var_boot(G, cvalues = para_results, is.very.rare, mac.thresh, wBurden, wSKAT, nboot=nboot, type=testtype)
+      SKAT_Scov <- Scovs$SKATSvar
+    } else {
+      SKAT_Scov <- SKATSVar_fun(G, cvalue, wSKAT, Gindep)
+      Scovs <- list(SKAT_Scov = SKAT_Scov)
+    }
+    
+    # pvalues
+    Liu_result <- Liu(A = diag(ncol(SKAT_Scov)), X_Sigma = SKAT_Scov, X_mu = rep(0, ncol(SKAT_Scov)), X = unlist(SKATscore$score))
+    SKAT_p <- unlist(Liu_result$pvalue)
     pvalue <- c(SKAT_p = SKAT_p)
+    
+    # final weights
+    weights <- list(wSKAT = wSKAT)
+    
   } else if (testtype == "Burden") {
-    Burdenboot_scores <- unlist(lapply(1:length(boot_scores),function(x) boot_scores[[x]]$newBurdenscoreQ))
-    Burden_p <- length(which(Burdenboot_scores > scoreQ$BurdenscoreQ))/length(Burdenboot_scores)
+    
+    # scores
+    Burdenscore <- BurdenQ_fun(G, cvalue, wBurden)
+    scoreQ <- list(BurdenscoreQ = Burdenscore$Q)
+    
+    # Scovs
+    if (boot == T) {
+      Scovs <- Var_boot(G, cvalues = para_results, is.very.rare, mac.thresh, wBurden, wSKAT, nboot=nboot, type=testtype)
+      Burden_Scov <- Scovs$BurdenSvar
+    } else {
+      Burden_Scov <- BurdenSVar_fun(G, cvalue, wBurden, Gindep)
+      Scovs <- list(Burden_Scov = Burden_Scov)
+    }
+    
+    # pvalues
+    Burden_p <- Burden(S = Burdenscore$score, sigma = Burden_Scov)
     pvalue <- c(Burden_p = Burden_p)
+    
+    # final weights
+    weights <- list(wBurden = wBurden)
+    
   } else if (testtype == "ACAT") {
-    ACATboot_scores <- matrix(unlist(lapply(1:length(boot_scores),function(x) boot_scores[[x]]$newACATscoreQs)), nrow = length(boot_scores), byrow = T)
-    ACATpvalues <- 1 - sapply(1:length(scoreQ$ACATscoreQs), function(j) mean(ACATboot_scores[, j] <= scoreQ$ACATscoreQs[j]))
-    ACAT_p <- ACAT(ACATpvalues, ACATweights)
+    
+    # scores
+    ACATscore <- ACATsingleQ_fun(G, cvalue)
+    scoreQ <- list(ACATscoreQs = ACATscore$Q)
+    
+    # Scovs
+    if (boot == T) {
+      Scovs <- Var_boot(G, cvalues = para_results, is.very.rare, mac.thresh, wBurden, wSKAT, nboot=nboot, type=testtype)
+      ACAT_Scov <- Scovs$ACATSvar
+    } else {
+      ACAT_Scov <- ACATSVar_fun(G, cvalue, is.very.rare, mac.thresh, wBurden, Gindep)
+      Scovs <- list(ACAT_Scov = ACAT_Scov)
+    }
+    
+    # pvalues
+    ACATpvalues <- mapply(Burden, ACATscore$score, ACAT_Scov)
+    is.keep <- rep(T, length(ACATpvalues))
+    is.keep[which(ACATpvalues == 1)] <- F
+    ACAT_p <- ACAT(Pvals=ACATpvalues[is.keep], weights=wACAT[is.keep])
     pvalue <- c(ACAT_p = ACAT_p)
+    
+    # final weights
+    weights <- list(wACAT = wACAT[is.keep])
+    
   }
-
-
-  results <- list(theta_est = theta_est, scoreQ = scoreQ, pvalue = pvalue)
+  
+  # final results
+  results <- list(nobs = nrow(G), theta_est = theta_est, scoreQ = scoreQ, pvalue = pvalue, Scovs = Scovs, weights = weights, weights.beta = weights.beta)
+  
   return(results)
 }

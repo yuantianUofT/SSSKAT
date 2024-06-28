@@ -4,10 +4,10 @@
 \alias{get_Y_threshold}
 \title{function to obtain threshold}
 \usage{
-get_Y_threshold(dat, prev_value)
+get_Y_threshold(S, prev_value)
 }
 \arguments{
-\item{dat}{Basis matrix of data set to be analyzed.}
+\item{S}{Continuous surrogate}
 
 \item{prev_est}{Estimate of prevalence.}
 }

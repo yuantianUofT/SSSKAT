@@ -1,8 +1,8 @@
-# Updated: 2023-09-19
+# Updated: 2024-06-28
 
 #' function to obtain threshold
 #'
-#' @param dat Basis matrix of data set to be analyzed.
+#' @param S Continuous surrogate
 #' @param prev_est Estimate of prevalence.
 #' @return Parameter estimates, SS SKAT score and SS SKAT pvalue.
 #' @examples
@@ -12,8 +12,7 @@
 #' threshold_SKAT_results <- threshold_SKAT(dat = analysis_data, id.t = labeled_data_id, thre_value = Y_threshold);
 #' @export
 
-get_Y_threshold <- function(dat, prev_value) {
-  S <- dat$S
+get_Y_threshold <- function(S, prev_value) {
   thre_value <- quantile(S, 1-prev_value)
   return(thre_value)
 }
