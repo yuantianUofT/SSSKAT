@@ -1,3 +1,27 @@
+# Updated: 2024-06-28
+
+#' plof test function
+#'
+#' @param chr Chromosome number
+#' @param gene_name Gene name
+#' @param genofile Genotype file
+#' @param obj_SS Null object
+#' @param genes Gene list
+#' @param QC_label Quality control label
+#' @param variant_type Variant type
+#' @param geno_missing_imputation Genotype missing imputation
+#' @param Annotation_dir Annotation directory
+#' @param Annotation_name_catalog Annotation name catalog
+#' @param Use_annotation_weights Use annotation weights
+#' @param Annotation_name Annotation name
+#' @param rare_maf_cutoff Rare MAF cutoff
+#' @param rv_num_cutoff RV number cutoff
+#' @param mac.thresh MAC threshold
+#' @param boot Parametric Bootstrapping
+#' @param para_results Saved parametric Bootstrapping results
+#' @return All comparison results
+#' @export
+
 plof_SS <- function(chr, gene_name, genofile, obj_SS, genes,
                     QC_label="annotation/info/QC_label", variant_type=c("SNV","Indel","variant"), geno_missing_imputation=c("mean","minor"),
                     Annotation_dir="annotation/info/FunctionalAnnotation", Annotation_name_catalog,

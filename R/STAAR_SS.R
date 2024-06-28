@@ -1,4 +1,20 @@
+# Updated: 2024-06-28
 
+#' STAAR_SS function
+#'
+#' @param genotype Genotype matrix
+#' @param phen Phenotype
+#' @param surro Surrogate
+#' @param covar Covariate
+#' @param id.t Labeled id
+#' @param annotation_phred Annotation phred
+#' @param rare_maf_cutoff Rare MAF cutoff
+#' @param rv_num_cutoff RV number cutoff
+#' @param mac.thresh MAC threshold
+#' @param boot Parametric Bootstrapping
+#' @param para_results Saved parametric Bootstrapping results
+#' @return STAAR SS, naive, thesholded, labeled, oracle results
+#' @export
 
 STAAR_SS <- function(genotype, phen, surro, covar, id.t, annotation_phred = NULL,
                      rare_maf_cutoff = 0.01, rv_num_cutoff, mac.thresh,

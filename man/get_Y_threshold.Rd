@@ -17,9 +17,3 @@ Parameter estimates, SS SKAT score and SS SKAT pvalue.
 \description{
 function to obtain threshold
 }
-\examples{
-analysis_data <- example_data$my_dat;
-labeled_data_id <- example_data$id.t;
-Y_threshold <- get_Y_threshold(dat = analysis_data, prev_value = mean(analysis_data$Y[labeled_data_id]));
-threshold_SKAT_results <- threshold_SKAT(dat = analysis_data, id.t = labeled_data_id, thre_value = Y_threshold);
-}
