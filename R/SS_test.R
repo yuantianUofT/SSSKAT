@@ -76,10 +76,7 @@ SS_test <- function(Y, X, G, S, id.t, para_results, wBurden = NULL, wSKAT = NULL
       Burden_Scov <- Scovs$BurdenSvar
       ACAT_Scov <- Scovs$ACATSvar
     } else {
-      SKAT_Scov <- SKATSVar_fun(G, cvalue, wSKAT, Gindep)
-      Burden_Scov <- BurdenSVar_fun(G, cvalue, wBurden, Gindep)
-      ACAT_Scov <- ACATSVar_fun(G, cvalue, is.very.rare, mac.thresh, wBurden, Gindep)
-      Scovs <- list(SKAT_Scov = SKAT_Scov, Burden_Scov = Burden_Scov, ACAT_Scov = ACAT_Scov)
+      
     }
     
     # pvalues
@@ -106,8 +103,7 @@ SS_test <- function(Y, X, G, S, id.t, para_results, wBurden = NULL, wSKAT = NULL
       Scovs <- Var_boot(G, para_cvalue = para_results, is.very.rare, mac.thresh, wBurden, wSKAT, nboot=nboot, type=testtype)
       SKAT_Scov <- Scovs$SKATSvar
     } else {
-      SKAT_Scov <- SKATSVar_fun(G, cvalue, wSKAT, Gindep)
-      Scovs <- list(SKAT_Scov = SKAT_Scov)
+
     }
     
     # pvalues
@@ -129,8 +125,7 @@ SS_test <- function(Y, X, G, S, id.t, para_results, wBurden = NULL, wSKAT = NULL
       Scovs <- Var_boot(G, para_cvalue = para_results, is.very.rare, mac.thresh, wBurden, wSKAT, nboot=nboot, type=testtype)
       Burden_Scov <- Scovs$BurdenSvar
     } else {
-      Burden_Scov <- BurdenSVar_fun(G, cvalue, wBurden, Gindep)
-      Scovs <- list(Burden_Scov = Burden_Scov)
+
     }
     
     # pvalues
@@ -151,8 +146,7 @@ SS_test <- function(Y, X, G, S, id.t, para_results, wBurden = NULL, wSKAT = NULL
       Scovs <- Var_boot(G, para_cvalue = para_results, is.very.rare, mac.thresh, wBurden, wSKAT, nboot=nboot, type=testtype)
       ACAT_Scov <- Scovs$ACATSvar
     } else {
-      ACAT_Scov <- ACATSVar_fun(G, cvalue, is.very.rare, mac.thresh, wBurden, Gindep)
-      Scovs <- list(ACAT_Scov = ACAT_Scov)
+
     }
     
     # pvalues

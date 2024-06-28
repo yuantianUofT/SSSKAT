@@ -653,7 +653,6 @@ ACATSsingleVar_fun <- function(G, para_cvalue) {
 #' @param is.very.rare If the SNPs are very rare.
 #' @param mac.thresh A threshold of the minor allele count (MAC). The Burden test will be used to aggregate the SNPs with MAC less than this threshold.
 #' @param wBurden Vector of SNP burden weights. 
-#' @param Gindep If SNPs are independent.
 #' @return SS_ACAT variance
 #' @noRd
 
@@ -670,7 +669,7 @@ ACATSVar_fun <- function(G, para_cvalue, is.very.rare, mac.thresh, wBurden) {
     denseG <- G[, (!is.very.rare), drop = FALSE]
     wrare <- wBurden[is.very.rare]
 
-    Burden_var <- BurdenSVar_fun(rareG, para_cvalue, wrare, Gindep)
+    Burden_var <- BurdenSVar_fun(rareG, para_cvalue, wrare)
     ACAT_vars <- ACATSsingleVar_fun(denseG, para_cvalue)
 
     S_vars <- c(Burden_var, ACAT_vars)
