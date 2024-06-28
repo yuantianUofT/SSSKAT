@@ -163,7 +163,7 @@ sl_theta = function(Y, S, X, id.t, weights = NULL){
 #' @param NULL_nlog_like Function to be optimized, predefined as negative log-likelihood function under the null
 #' @param nit Number of iteration for optimization if full_NR_evaluation is FALSE.
 #' @return Final estimates of the parameters
-#' @noRd
+#' @export
 
 ssl_theta <- function(Y, X, S, Z, id.t, weights = NULL,
                       full_eval = TRUE, NULL_nlog_like,
