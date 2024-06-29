@@ -6,7 +6,7 @@
 
 #' Define logit function
 #' @param xx a numeric object
-#' @noRd
+#' @export
 
 logit <- function(xx) {
   log(xx/(1-xx))
@@ -15,7 +15,7 @@ logit <- function(xx) {
 
 #' Define expit function
 #' @param xx a numeric object
-#' @noRd
+#' @export
 
 g.logit <- function(xx) {
   exp(xx)/(1+exp(xx))
@@ -27,7 +27,7 @@ g.logit <- function(xx) {
 #' @param b slope
 #' @param x covariates
 #' @return expit under the null model
-#' @noRd
+#' @export
 
 y.p_NULL <- function(a, b, x) {
   return(1/(1 + exp(-x%*%b-a)))
@@ -42,7 +42,7 @@ y.p_NULL <- function(a, b, x) {
 #' @param id.t Row id of labeled data.
 #' @param theta Distribution parameters.
 #' @return log-likelihood function under the null
-#' @noRd
+#' @export
 
 NULL_log_like <- function(Y, X, S, Z, id.t, theta) {
 
@@ -92,7 +92,7 @@ NULL_log_like <- function(Y, X, S, Z, id.t, theta) {
 #' @param id.t Row id of labeled data.
 #' @param theta Distribution parameters.
 #' @return Negative log-likelihood function under the null
-#' @noRd
+#' @export
 
 NULL_nlog_like <- function(Y, X, S, Z, id.t, theta) {
   return(-NULL_log_like(Y, X, S, Z, id.t, theta))
@@ -106,7 +106,7 @@ NULL_nlog_like <- function(Y, X, S, Z, id.t, theta) {
 #' @param id.t Row id of labeled data.
 #' @param weights Weights of the individual in the sample, default treat data equally.
 #' @return Initial estimates of the parameters
-#' @noRd
+#' @export
 
 sl_theta = function(Y, S, X, id.t, weights = NULL){
 
@@ -152,6 +152,50 @@ sl_theta = function(Y, S, X, id.t, weights = NULL){
 }
 
 
+#' Final parameter estimates under the null
+#' @param Y Binary response variable
+#' @param X Covariates
+#' @param S Continuous surrogate
+#' @param Z Covaraites with intercept column design matrix
+#' @param id.t Row id of labeled data.
+#' @param weights Weights of the individual in the sample, default treat data equally.
+#' @param full_eval Full optimization iteration, default to be TRUE.
+#' @param NULL_nlog_like Function to be optimized, predefined as negative log-likelihood function under the null
+#' @param nit Number of iteration for optimization if full_NR_evaluation is FALSE.
+#' @return Final estimates of the parameters
+#' @export
+
+ssl_theta <- function(Y, X, S, Z, id.t, weights = NULL,
+                      full_eval = TRUE, NULL_nlog_like,
+                      nit) {
+
+
+  # initial estimates of the parameters
+  init_sl = sl_theta(Y, S, X, id.t, weights)
+
+  # final estimates maximizing likelihood
+  if (full_eval){
+    optim_temp <- tryCatch(optim(par=init_sl, fn=NULL_nlog_like, Y = Y, X = X, S = S, Z = Z, id.t=id.t,
+                                 method="BFGS"), error=function(e) NA)
+    if (length(optim_temp) == 1) {
+      warning("Switched from BFGS to SANN in optim")
+      optim_temp <- tryCatch(optim(par=init_sl, fn=NULL_nlog_like, Y = Y, X = X, S = S, Z = Z, id.t=id.t,
+                                   method="SANN"), error=function(e) NA)
+    }
+    final_est <- optim_temp$par
+    converge_steps <- optim_temp$counts[2]
+  } else {
+    optim_temp <- tryCatch(optim(par=init_sl, fn=NULL_nlog_like, Y = Y, X = X, S = S, Z = Z, id.t=id.t,
+                                 method="BFGS", control = list(maxit=nit)), error=function(e) NA)
+    final_est <- optim_temp$par
+    converge_steps <- optim_temp$counts[2]
+  }
+
+  # final parameter estimates
+  return(list(final_est = final_est, converge_steps = converge_steps, l_value = optim_temp$value))
+}
+
+
 #' c value calculation to be used in score function
 #' @param Y Binary response variable
 #' @param X Covariates
@@ -160,7 +204,7 @@ sl_theta = function(Y, S, X, id.t, weights = NULL){
 #' @param id.t Row id of labeled data.
 #' @param theta Distribution parameters
 #' @return c value to be used in score function
-#' @noRd
+#' @export
 
 c_func <- function(Y, X, S, Z, id.t, theta) {
   # parameters setup
@@ -205,7 +249,7 @@ c_func <- function(Y, X, S, Z, id.t, theta) {
 #' @param cvalue Individual c values
 #' @param wSKAT Vector of SNP SKAT weights.
 #' @return SS_SKAT score and test statistics
-#' @noRd
+#' @export
 
 SKATQ_fun <- function(G, cvalue, wSKAT) {
   
@@ -225,7 +269,7 @@ SKATQ_fun <- function(G, cvalue, wSKAT) {
 #' @param GW SKAT weighted genotype data
 #' @param cvalue Individual c values
 #' @return SS_SKAT score
-#' @noRd
+#' @export
 
 SKATscore_fun <- function(GW, cvalue) {
   
@@ -241,7 +285,7 @@ SKATscore_fun <- function(GW, cvalue) {
 #' @param Gw Burden weighted genotype data
 #' @param cvalue Individual c values
 #' @return SS_burden score
-#' @noRd
+#' @export
 
 Burdenscore_fun <- function(Gw, cvalue) {
   
@@ -258,7 +302,7 @@ Burdenscore_fun <- function(Gw, cvalue) {
 #' @param cvalue Individual c values
 #' @param wBurden Vector of SNP burden weights.
 #' @return SS_burden score and test statistics
-#' @noRd
+#' @export
 
 BurdenQ_fun <- function(G, cvalue, wBurden) {
   
@@ -277,7 +321,7 @@ BurdenQ_fun <- function(G, cvalue, wBurden) {
 #' @param G Genotype data
 #' @param cvalue Individual c values
 #' @return SS_ACAT single SNP scores and test statistics
-#' @noRd
+#' @export
 
 ACATsingleQ_fun <- function(G, cvalue) {
 
@@ -293,7 +337,7 @@ ACATsingleQ_fun <- function(G, cvalue) {
 #' @param G Genotype data
 #' @param cvalue Individual c values
 #' @return SS_ACAT single SNP score
-#' @noRd
+#' @export
 
 ACATsinglescore_fun <- function(G, cvalue) {
   
@@ -308,7 +352,7 @@ ACATsinglescore_fun <- function(G, cvalue) {
 #' @param G Genotype data
 #' @param mac.thresh A threshold of the minor allele count (MAC). The Burden test will be used to aggregate the SNPs with MAC less than this threshold.
 #' @return If the SNPs are very rare. TRUE for rare.
-#' @noRd
+#' @export
 
 rare_func <- function(G, mac.thresh) {
   mac <- colSums(G)
@@ -324,7 +368,7 @@ rare_func <- function(G, mac.thresh) {
 #' @param is.very.rare If the SNPs are very rare. TRUE for rare.
 #' @param wBurden Vector of SNP burden weights.
 #' @return SS_ACAT scores and test statistics
-#' @noRd
+#' @export
 
 ACATQ_fun <- function(G, cvalue, mac.thresh, is.very.rare, wBurden) {
   
@@ -368,7 +412,7 @@ ACATQ_fun <- function(G, cvalue, mac.thresh, is.very.rare, wBurden) {
 #' @param mac.thresh A threshold of the minor allele count (MAC). The Burden test will be used to aggregate the SNPs with MAC less than this threshold.
 #' @param is.very.rare If the SNPs are very rare. TRUE for rare.
 #' @return SS_ACAT scores
-#' @noRd
+#' @export
 
 ACATscore_fun <- function(Gw, G, cvalue, mac.thresh, is.very.rare) {
   
@@ -399,7 +443,7 @@ ACATscore_fun <- function(Gw, G, cvalue, mac.thresh, is.very.rare) {
 #' @param wBurden Vector of SNP burden weights. When it is NULL, the beta weight with the “weights.beta” parameter is used.
 #' @param weights.beta Weights beta parameters.
 #' @return ACAT weights
-#' @noRd
+#' @export
 
 ACATW_func <- function(G, is.very.rare, wBurden, weights.beta) {
 
@@ -450,7 +494,7 @@ ACATW_func <- function(G, is.very.rare, wBurden, weights.beta) {
 #' @param G Genotype matrix.
 #' @param weights.beta Weights beta parameters.
 #' @return Burden or SKAT weights
-#' @noRd
+#' @export
 
 SKATBurdenW_func <- function(G, weights.beta) {
   
@@ -470,7 +514,7 @@ SKATBurdenW_func <- function(G, weights.beta) {
 #' @param is.check Check pvalues
 #' @param is.small.thre Threshold for pvalue to be adjusted
 #' @return ACAT combined pvalue
-#' @noRd
+#' @export
 
 ACAT <- function(Pvals, weights = NULL, is.check = T, is.small.thre = 1e-15) {
 
@@ -546,7 +590,7 @@ ACAT <- function(Pvals, weights = NULL, is.check = T, is.small.thre = 1e-15) {
 #' @param para_cvalue Parametric boostrapped individual c values
 #' @param wSKAT Vector of SNP SKAT weights.
 #' @return SS_SKAT variance matrix
-#' @noRd
+#' @export
 
 SKATSVar_fun <- function(G, para_cvalue, wSKAT) {
 
@@ -568,7 +612,7 @@ SKATSVar_fun <- function(G, para_cvalue, wSKAT) {
 #' @param para_cvalue Parametric boostrapped individual c values
 #' @param wBurden Vector of SNP burden weights.
 #' @return SS_Burden variance matrix
-#' @noRd
+#' @export
 
 BurdenSVar_fun <- function(G, para_cvalue, wBurden) {
   
@@ -590,7 +634,7 @@ BurdenSVar_fun <- function(G, para_cvalue, wBurden) {
 #' @param G Genotype data
 #' @param para_cvalue Parametric boostrapped individual c values
 #' @return SS_ACAT single SNP variances
-#' @noRd
+#' @export
 
 ACATSsingleVar_fun <- function(G, para_cvalue) {
 
@@ -610,7 +654,7 @@ ACATSsingleVar_fun <- function(G, para_cvalue) {
 #' @param mac.thresh A threshold of the minor allele count (MAC). The Burden test will be used to aggregate the SNPs with MAC less than this threshold.
 #' @param wBurden Vector of SNP burden weights. 
 #' @return SS_ACAT variance
-#' @noRd
+#' @export
 
 ACATSVar_fun <- function(G, para_cvalue, is.very.rare, mac.thresh, wBurden) {
 
@@ -644,7 +688,7 @@ ACATSVar_fun <- function(G, para_cvalue, is.very.rare, mac.thresh, wBurden) {
 #' @param wSKAT Vector of SNP SKAT weights.
 #' @param type Type of SS tests
 #' @return Bootstrapped SS score variances
-#' @noRd
+#' @export
 
 Var_boot <- function(G, para_cvalue, is.very.rare, mac.thresh, wBurden, wSKAT, type) {
   
@@ -683,7 +727,7 @@ Var_boot <- function(G, para_cvalue, is.very.rare, mac.thresh, wBurden, wSKAT, t
 #' @param X_mu Mean of the score function.
 #' @param X Score vector S.
 #' @return pvalue, non-central chi-square df and nc.
-#' @noRd
+#' @export
 
 Liu_adj <- function(A, X_Sigma, X_mu, X) {
   Q_t <- t(X) %*% A %*% X
@@ -726,7 +770,7 @@ Liu_adj <- function(A, X_Sigma, X_mu, X) {
 #' @param X_mu Mean of the score function.
 #' @param X Score vector S.
 #' @return pvalue, non-central chi-square df and nc.
-#' @noRd
+#' @export
 
 Liu <- function(A, X_Sigma, X_mu, X) {
   Q_t <- t(X) %*% A %*% X
@@ -767,7 +811,7 @@ Liu <- function(A, X_Sigma, X_mu, X) {
 #' @param S S score of burden, Q=S'S.
 #' @param sigma Variance of S.
 #' @return pvalue.
-#' @noRd
+#' @export
 
 Burden <- function(S, sigma) {
   V <- S/sqrt(sigma)
@@ -780,7 +824,7 @@ Burden <- function(S, sigma) {
 #' MinP calculation
 #' @param ps Pvalue to be combined
 #' @return pvalue.
-#' @noRd
+#' @export
 
 minP <- function(ps) {
   p1 <- min(ps)
@@ -792,7 +836,7 @@ minP <- function(ps) {
 #' SimesP calculation
 #' @param ps Pvalue to be combined
 #' @return pvalue.
-#' @noRd
+#' @export
 
 SimesP <- function(ps) {
   sortps <- sort(ps)
