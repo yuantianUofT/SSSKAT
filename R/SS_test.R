@@ -100,7 +100,7 @@ SS_test <- function(Y, X, G, S, id.t, para_results, wBurden = NULL, wSKAT = NULL
     
     # Scovs
     if (boot == T) {
-      Scovs <- Var_boot(G, para_cvalue = para_results, is.very.rare, mac.thresh, wBurden, wSKAT, nboot=nboot, type=testtype)
+      Scovs <- Var_boot(G, para_cvalue = para_results, is.very.rare, mac.thresh, wBurden, wSKAT, type=testtype)
       SKAT_Scov <- Scovs$SKATSvar
     } else {
 
@@ -122,7 +122,7 @@ SS_test <- function(Y, X, G, S, id.t, para_results, wBurden = NULL, wSKAT = NULL
     
     # Scovs
     if (boot == T) {
-      Scovs <- Var_boot(G, para_cvalue = para_results, is.very.rare, mac.thresh, wBurden, wSKAT, nboot=nboot, type=testtype)
+      Scovs <- Var_boot(G, para_cvalue = para_results, is.very.rare, mac.thresh, wBurden, wSKAT, type=testtype)
       Burden_Scov <- Scovs$BurdenSvar
     } else {
 
@@ -143,7 +143,7 @@ SS_test <- function(Y, X, G, S, id.t, para_results, wBurden = NULL, wSKAT = NULL
     
     # Scovs
     if (boot == T) {
-      Scovs <- Var_boot(G, para_cvalue = para_results, is.very.rare, mac.thresh, wBurden, wSKAT, nboot=nboot, type=testtype)
+      Scovs <- Var_boot(G, para_cvalue = para_results, is.very.rare, mac.thresh, wBurden, wSKAT, type=testtype)
       ACAT_Scov <- Scovs$ACATSvar
     } else {
 
