@@ -7,13 +7,12 @@
 #' @param id.t Row id of labeled data.
 #' @param weights Weights of the individual in the sample, default treat data equally.
 #' @param full_eval Full optimization iteration, default to be TRUE.
-#' @param NULL_nlog_like Function to be optimized, predefined as negative log-likelihood function under the null
 #' @param nit Number of iteration for optimization if full_NR_evaluation is FALSE.
 #' @return Final estimates of the parameters
 #' @export
 
 ssl_theta <- function(Y, X, S, Z, id.t, weights = NULL,
-                      full_eval = TRUE, NULL_nlog_like,
+                      full_eval = TRUE,
                       nit) {
   
   

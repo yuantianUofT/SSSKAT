@@ -4,17 +4,7 @@
 \alias{ssl_theta}
 \title{Final parameter estimates under the null}
 \usage{
-ssl_theta(
-  Y,
-  X,
-  S,
-  Z,
-  id.t,
-  weights = NULL,
-  full_eval = TRUE,
-  NULL_nlog_like,
-  nit
-)
+ssl_theta(Y, X, S, Z, id.t, weights = NULL, full_eval = TRUE, nit)
 }
 \arguments{
 \item{Y}{Binary response variable}
@@ -30,8 +20,6 @@ ssl_theta(
 \item{weights}{Weights of the individual in the sample, default treat data equally.}
 
 \item{full_eval}{Full optimization iteration, default to be TRUE.}
-
-\item{NULL_nlog_like}{Function to be optimized, predefined as negative log-likelihood function under the null}
 
 \item{nit}{Number of iteration for optimization if full_NR_evaluation is FALSE.}
 }
