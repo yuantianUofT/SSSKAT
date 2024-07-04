@@ -8,7 +8,6 @@
 #' @param S Continuous surrogate
 #' @param id.t Row id of labeled data in the dataset.
 #' @param para_results Saved parametric boostrapped individual c value matrix.
-#' @param theta_est Estimated parameters
 #' @param wBurden Vector of SNP burden weights.
 #' @param wSKAT Vector of SNP SKAT weights.
 #' @param wACAT Vector of SNP ACAT weights.
@@ -23,7 +22,7 @@
 #' @export
 
 
-SS_test <- function(Y, X, G, S, id.t, para_results, theta_est, 
+SS_test <- function(Y, X, G, S, id.t, para_results, 
                     wBurden = NULL, wSKAT = NULL, wACAT = NULL, weights.beta = NULL, mac.thresh = 10,
                     full_NR_evaluation = TRUE, nit = NULL, NULL_nlog_like, 
                     testtype = "all", boot = T) {
@@ -37,6 +36,7 @@ SS_test <- function(Y, X, G, S, id.t, para_results, theta_est,
   }
   
   # cvalue estimates
+  theta_est <- ssl_theta(Y = Y, X = X, S = S, Z = Z, id.t = id.t, weights = NULL, full_eval = TRUE, NULL_nlog_like, nit)$final_est
   cvalue <- c_func(Y, X, S, Z, id.t, theta = theta_est)
   
   # weights
