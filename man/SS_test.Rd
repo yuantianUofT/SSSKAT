@@ -11,6 +11,7 @@ SS_test(
   S,
   id.t,
   para_results,
+  theta_est,
   wBurden = NULL,
   wSKAT = NULL,
   wACAT = NULL,
@@ -35,6 +36,8 @@ SS_test(
 \item{id.t}{Row id of labeled data in the dataset.}
 
 \item{para_results}{Saved parametric boostrapped individual c value matrix.}
+
+\item{theta_est}{Estimated parameters}
 
 \item{wBurden}{Vector of SNP burden weights.}
 
