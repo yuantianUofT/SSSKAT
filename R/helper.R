@@ -662,7 +662,8 @@ ACATSVar_fun <- function(G, para_cvalue, is.very.rare, mac.thresh, wBurden) {
     Burden_var <- BurdenSVar_fun(G, para_cvalue, wBurden)
     S_vars <- Burden_var
   } else if (sum(is.very.rare) == 0) {
-    ACAT_vars <- ACATSsingleVar_fun(G, para_cvalue)
+    # apply ACATSsingleVar_fun across columns of G
+    ACAT_vars <- apply(G, 2, function(x) ACATSsingleVar_fun(x, para_cvalue))
     S_vars <- ACAT_vars
   } else {
     rareG <- G[, is.very.rare, drop = FALSE]
@@ -670,7 +671,7 @@ ACATSVar_fun <- function(G, para_cvalue, is.very.rare, mac.thresh, wBurden) {
     wrare <- wBurden[is.very.rare]
 
     Burden_var <- BurdenSVar_fun(rareG, para_cvalue, wrare)
-    ACAT_vars <- ACATSsingleVar_fun(denseG, para_cvalue)
+    ACAT_vars <- apply(denseG, 2, function(x) ACATSsingleVar_fun(x, para_cvalue))
 
     S_vars <- c(Burden_var, ACAT_vars)
   }

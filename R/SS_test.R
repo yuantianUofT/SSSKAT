@@ -8,6 +8,7 @@
 #' @param S Continuous surrogate
 #' @param id.t Row id of labeled data in the dataset.
 #' @param para_results Saved parametric boostrapped individual c value matrix.
+#' @param theta_est Estimated parameters
 #' @param wBurden Vector of SNP burden weights.
 #' @param wSKAT Vector of SNP SKAT weights.
 #' @param wACAT Vector of SNP ACAT weights.
@@ -22,7 +23,8 @@
 #' @export
 
 
-SS_test <- function(Y, X, G, S, id.t, para_results, wBurden = NULL, wSKAT = NULL, wACAT = NULL, weights.beta = NULL, mac.thresh = 10,
+SS_test <- function(Y, X, G, S, id.t, para_results, theta_est, 
+                    wBurden = NULL, wSKAT = NULL, wACAT = NULL, weights.beta = NULL, mac.thresh = 10,
                     full_NR_evaluation = TRUE, nit = NULL, NULL_nlog_like, 
                     testtype = "all", boot = T) {
   if (! testtype %in% c("all", "SKAT", "Burden", "ACAT")) {
@@ -34,9 +36,7 @@ SS_test <- function(Y, X, G, S, id.t, para_results, wBurden = NULL, wSKAT = NULL
     is.very.rare <- rare_func(G, mac.thresh)
   }
   
-  # parameter estimates
-  theta_est <- ssl_theta(Y = Y, X = X, S = S, Z = Z, id.t = id.t, full_eval = full_NR_evaluation, nit = nit,
-                         NULL_nlog_like = NULL_nlog_like)$final_est
+  # cvalue estimates
   cvalue <- c_func(Y, X, S, Z, id.t, theta = theta_est)
   
   # weights
@@ -162,7 +162,8 @@ SS_test <- function(Y, X, G, S, id.t, para_results, wBurden = NULL, wSKAT = NULL
   }
   
   # final results
-  results <- list(nobs = nrow(G), theta_est = theta_est, scoreQ = scoreQ, pvalue = pvalue, Scovs = Scovs, weights = weights, weights.beta = weights.beta)
+  results <- list(nobs = nrow(G), theta_est = theta_est, scoreQ = scoreQ, pvalue = pvalue, 
+                  Scovs = Scovs, weights = weights, weights.beta = weights.beta)
   
   return(results)
 }
