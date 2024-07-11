@@ -27,12 +27,14 @@ para_func <- function(nn, theta, Y, X, S, Z, id.t) {
   para_S <- rep(NA, nn)
   para_S[para_Y == 1] <- rnorm(n = sum(para_Y), mean = m1, sd = sd1)
   para_S[para_Y == 0] <- rnorm(n = sum(para_Y == 0), mean = m0, sd = sd0)
+  para_id.t <- sample(1:nn, size = length(id.t), replace = FALSE)
   
   # parametric parameter estimation 
   para_est_theta <- suppressWarnings(ssl_theta(Y = para_Y, X = X, S = para_S, Z = Z, 
-                                               id.t = id.t, weights = NULL, full_eval = TRUE, NULL_nlog_like, nit)$final_est)
+                                               id.t = para_id.t, weights = NULL, full_eval = TRUE, 
+                                               NULL_nlog_like, nit)$final_est)
   # parametric c-value estimation
-  para_cvalue_est <- c_func(Y = para_Y, X = X, S = para_S, Z = Z, id.t = id.t, theta=para_est_theta)
+  para_cvalue_est <- c_func(Y = para_Y, X = X, S = para_S, Z = Z, id.t = para_id.t, theta=para_est_theta)
   
   return(para_cvalue_est)
 }
