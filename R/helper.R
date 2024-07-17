@@ -9,6 +9,10 @@
 #' @export
 
 logit <- function(xx) {
+  if (any(xx <= 0) || any(xx >= 1)) {
+    warning("input for logit function must be between 0 and 1, exclusive; returning NA for out-of-bounds values.")
+    return(NA)
+  }
   log(xx/(1-xx))
 }
 
@@ -18,7 +22,7 @@ logit <- function(xx) {
 #' @export
 
 g.logit <- function(xx) {
-  exp(xx)/(1+exp(xx))
+  plogis(xx)
 }
 
 
