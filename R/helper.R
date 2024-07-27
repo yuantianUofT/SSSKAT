@@ -61,8 +61,8 @@ NULL_log_like <- function(Y, X, S, Z, id.t, theta, distri) {
     
     # parameters setup
     m1 <- theta[(ncol(X)+2)]
-    m0 <- theta[(ncol(X)+3)]
-    s1 <- exp(theta[(ncol(X)+4)])
+    s1 <- exp(theta[(ncol(X)+3)])
+    m0 <- theta[(ncol(X)+4)]
     s0 <- exp(theta[(ncol(X)+5)])
   
     # labeled likelihood
@@ -146,8 +146,8 @@ NULL_log_like <- function(Y, X, S, Z, id.t, theta, distri) {
     
     # parameters setup
     m1 <- exp(theta[(ncol(X)+2)])
-    m0 <- exp(theta[(ncol(X)+3)])
-    s1 <- exp(theta[(ncol(X)+4)])
+    s1 <- exp(theta[(ncol(X)+3)])
+    m0 <- exp(theta[(ncol(X)+4)])
     s0 <- exp(theta[(ncol(X)+5)])
     
     # labeled likelihood
@@ -286,8 +286,8 @@ sl_theta = function(Y, S, X, id.t, weights = NULL, distri){
   if (distri == "normal") {
     if (length(id.t) == 0) {
       thre_value1 <- quantile(S, 0.5)
-      m1= mean(S[which(S>thre_value1)])
-      s1= sd(S[which(S>thre_value1)])
+      m1=mean(S[which(S>thre_value1)])
+      s1=sd(S[which(S>thre_value1)])
       m0=mean(S[S<thre_value1])
       s0=sd(S[S<thre_value1])
     } else{
@@ -413,15 +413,15 @@ c_func <- function(Y, X, S, Z, id.t, theta, distri) {
     # parameters setup
     alpha <- theta[1:(ncol(X)+1)]
     m1 <- theta[(ncol(X)+2)]
-    m0 <- theta[(ncol(X)+3)]
-    s1 <- exp(theta[(ncol(X)+4)])
+    s1 <- exp(theta[(ncol(X)+3)])
+    m0 <- theta[(ncol(X)+4)]
     s0 <- exp(theta[(ncol(X)+5)])
   } else {
     # parameters setup
     alpha <- theta[1:(ncol(X)+1)]
     m1 <- exp(theta[(ncol(X)+2)])
-    m0 <- exp(theta[(ncol(X)+3)])
-    s1 <- exp(theta[(ncol(X)+4)])
+    s1 <- exp(theta[(ncol(X)+3)])
+    m0 <- exp(theta[(ncol(X)+4)])
     s0 <- exp(theta[(ncol(X)+5)])
   }
  
