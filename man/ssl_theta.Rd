@@ -13,7 +13,8 @@ ssl_theta(
   weights = NULL,
   full_eval = TRUE,
   NULL_nlog_like,
-  nit
+  nit,
+  distri
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ ssl_theta(
 \item{NULL_nlog_like}{Function to be optimized, predefined as negative log-likelihood function under the null}
 
 \item{nit}{Number of iteration for optimization if full_NR_evaluation is FALSE.}
+
+\item{distri}{Distribution of S|Y, either "normal" or "beta"}
 }
 \value{
 Final estimates of the parameters

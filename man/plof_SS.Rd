@@ -58,6 +58,8 @@ plof_SS(
 \item{boot}{Parametric Bootstrapping}
 
 \item{para_results}{Saved parametric Bootstrapping results}
+
+\item{distri}{Distribution of S|Y, either "normal" or "beta"}
 }
 \value{
 All comparison results

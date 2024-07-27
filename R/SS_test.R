@@ -18,6 +18,8 @@
 #' @param NULL_nlog_like Function to be optimized, predefined, no need to change
 #' @param testtype Type of test, default is "all", can also be "SKAT", "Burden", "ACAT".
 #' @param boot Whether perform parametric bootstrap, default is TRUE.
+#' @param distri Distribution of S|Y, either "normal" or "beta"
+#' @param theta Value of estimated parameters, default is NULL.
 #' @return Total sample size, parameter estimates, SS scores, SS score variance, SS pvalues, weights used in each test and weights.beta.
 #' @export
 
@@ -25,7 +27,7 @@
 SS_test <- function(Y, X, G, S, id.t, para_results, 
                     wBurden = NULL, wSKAT = NULL, wACAT = NULL, weights.beta = NULL, mac.thresh = 10,
                     full_NR_evaluation = TRUE, nit = NULL, NULL_nlog_like, 
-                    testtype = "all", boot = T) {
+                    testtype = "all", boot = T, distri, theta = NULL) {
   if (! testtype %in% c("all", "SKAT", "Burden", "ACAT")) {
     stop("testtype is not correctly specified")
   }
@@ -36,8 +38,10 @@ SS_test <- function(Y, X, G, S, id.t, para_results,
   }
   
   # cvalue estimates
-  theta_est <- ssl_theta(Y = Y, X = X, S = S, Z = Z, id.t = id.t, weights = NULL, full_eval = TRUE, NULL_nlog_like, nit)$final_est
-  cvalue <- c_func(Y, X, S, Z, id.t, theta = theta_est)
+  if (is.null(theta)) {
+    theta <- ssl_theta(Y = Y, X = X, S = S, Z = Z, id.t = id.t, distri = distri, weights = NULL, full_eval = TRUE, NULL_nlog_like, nit)$final_est
+  }
+  cvalue <- c_func(Y, X, S, Z, id.t, theta = theta, distri = distri)
   
   # weights
   if (is.null(wBurden) & is.null(wSKAT) & is.null(wACAT)) {

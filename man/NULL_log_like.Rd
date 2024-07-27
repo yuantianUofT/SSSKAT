@@ -4,7 +4,7 @@
 \alias{NULL_log_like}
 \title{Full log-likelihood function under the null}
 \usage{
-NULL_log_like(Y, X, S, Z, id.t, theta)
+NULL_log_like(Y, X, S, Z, id.t, theta, distri)
 }
 \arguments{
 \item{Y}{Binary response variable}
@@ -18,6 +18,8 @@ NULL_log_like(Y, X, S, Z, id.t, theta)
 \item{id.t}{Row id of labeled data.}
 
 \item{theta}{Distribution parameters.}
+
+\item{distri}{Distribution of S|Y, either "normal" or "beta"}
 }
 \value{
 log-likelihood function under the null

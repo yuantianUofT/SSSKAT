@@ -13,12 +13,13 @@
 #' @param mac.thresh MAC threshold
 #' @param boot Parametric Bootstrapping
 #' @param para_results Saved parametric Bootstrapping results
+#' @param distri Distribution of S|Y, either "normal" or "beta"
 #' @return STAAR SS, naive, thesholded, labeled, oracle results
 #' @export
 
 STAAR_SS <- function(genotype, phen, surro, covar, id.t, annotation_phred = NULL,
                      rare_maf_cutoff = 0.01, rv_num_cutoff, mac.thresh,
-                     boot = T, para_results){
+                     boot = T, para_results, distri){
 
   if(!inherits(genotype, "matrix") && !inherits(genotype, "Matrix")){
     stop("genotype is not a matrix!")
@@ -83,11 +84,11 @@ STAAR_SS <- function(genotype, phen, surro, covar, id.t, annotation_phred = NULL
     SS_result1 <- SS_test(Y = phen, para_results = para_results, X = covar, G = G, S = surro, id.t = id.t, wBurden = weights_1$w_B_1, wSKAT = weights_1$w_S_1, wACAT = weights_1$w_A_1, 
                           weights.beta = c(1, 25), mac.thresh = 10,
                           full_NR_evaluation = TRUE, nit = NULL, NULL_nlog_like, 
-                          testtype = "all", boot = boot) 
+                          testtype = "all", boot = boot, distri = distri) 
     SS_result2 <- SS_test(Y = phen, para_results = para_results, X = covar, G = G, S = surro, id.t = id.t, wBurden = weights_2$w_B_2, wSKAT = weights_2$w_S_2, wACAT = weights_2$w_A_2, 
                           weights.beta = c(1, 25), mac.thresh = 10,
                           full_NR_evaluation = TRUE, nit = NULL, NULL_nlog_like, 
-                          testtype = "all", boot = boot) 
+                          testtype = "all", boot = boot, distri = distri) 
     ## Native
     naive_result1 <- naive_test(X = covar, G = G, S = surro, id.t = id.t, wBurden = weights_1$w_B_1, wSKAT = weights_1$w_S_1, wACAT = weights_1$w_A_1, 
                                 mac.thresh = 10, testtype = "all")

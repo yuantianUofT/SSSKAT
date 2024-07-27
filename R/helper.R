@@ -45,44 +45,189 @@ y.p_NULL <- function(a, b, x) {
 #' @param Z Covaraites with intercept column design matrix
 #' @param id.t Row id of labeled data.
 #' @param theta Distribution parameters.
+#' @param distri Distribution of S|Y, either "normal" or "beta"
 #' @return log-likelihood function under the null
 #' @export
 
-NULL_log_like <- function(Y, X, S, Z, id.t, theta) {
-
-  # parameters setup
+NULL_log_like <- function(Y, X, S, Z, id.t, theta, distri) {
+  
   alpha <- theta[1:(ncol(X)+1)]
-  m1 <- theta[(ncol(X)+2)]
-  m0 <- theta[(ncol(X)+3)]
-  log.s1 <- theta[(ncol(X)+4)]
-  s1 <- exp(log.s1)
-  log.s0 <- theta[(ncol(X)+5)]
-  s0 <- exp(log.s0)
+  smalle <- as.numeric(Rmpfr::mpfr(1e-35, precBits=128))
+  # predicted values under the null
+  pred <- g.logit(Z %*% alpha)
+  pred <- as.vector(pred)
+  
+  if (distri == "normal") {
+    
+    # parameters setup
+    m1 <- theta[(ncol(X)+2)]
+    m0 <- theta[(ncol(X)+3)]
+    s1 <- exp(theta[(ncol(X)+4)])
+    s0 <- exp(theta[(ncol(X)+5)])
+  
+    # labeled likelihood
+    if (length(id.t) == 0) {
+      
+      l_ob <- 0
 
-  # labeled likelihood
-  if (length(id.t) == 0) {
-    l_ob <- 0
+    } else {
+      
+      # correct 0s in pred
+      pred_values <- pred[id.t]
+      index0 <- which(pred_values == 0)
+      if (length(index0) > 0) {
+        pred_values[which(pred_values == 0)] <- smalle
+      }
+      pred_values <- unlist(pred_values)
+      # correct 0s in 1-pred
+      pred_values1 <- 1-pred[id.t]
+      index0 <- which(pred_values1 == 0)
+      if (length(index0) > 0) {
+        pred_values1[which(pred_values1 == 0)] <- smalle
+      }
+      pred_values1 <- unlist(pred_values1)
+      
+      # log likelihood calculate
+      l_ob_y11 <- Y[id.t] * log(pred_values)
+      l_ob_y12 <- Y[id.t] * dnorm(S[id.t], mean=m1, sd=s1, log=T)
+      l_ob_y21 <- (1-Y[id.t]) * log(pred_values1)
+      l_ob_y22 <- (1-Y[id.t]) * dnorm(S[id.t], mean=m0, sd=s0, log=T)
+      l_ob <- sum(l_ob_y11 + l_ob_y12 + l_ob_y21 + l_ob_y22)
+    }
+    
+    # Unlabeled likelihood
+    if (length(id.t) == 0) {
+      
+      # correct 0s in pred
+      pred_values <- pred
+      index0 <- which(pred_values == 0)
+      if (length(index0) > 0) {
+        pred_values[which(pred_values == 0)] <- smalle
+      }
+      pred_values <- unlist(pred_values)
+      # correct 0s in 1-pred
+      pred_values1 <- 1-pred
+      index0 <- which(pred_values1 == 0)
+      if (length(index0) > 0) {
+        pred_values1[which(pred_values1 == 0)] <- smalle
+      }
+      pred_values1 <- unlist(pred_values1)
+      
+      # log likelihood calculate
+      l_unob_y1 <- pred_values1 * dnorm(S, mean=m0, sd=s0 , log=T)
+      l_unob_y2 <- pred_values * dnorm(S, mean=m1, sd=s1, log=T)
+    } else {
+      
+      # correct 0s in pred
+      pred_values <- pred[-id.t]
+      index0 <- which(pred_values == 0)
+      if (length(index0) > 0) {
+        pred_values[which(pred_values == 0)] <- smalle
+      }
+      pred_values <- unlist(pred_values)
+      # correct 0s in 1-pred
+      pred_values1 <- 1-pred[-id.t]
+      index0 <- which(pred_values1 == 0)
+      if (length(index0) > 0) {
+        pred_values1[which(pred_values1 == 0)] <- smalle
+      }
+      pred_values1 <- unlist(pred_values1)
+      
+      # log likelihood calculate
+      l_unob_y1 <- pred_values1 * dnorm(S[-id.t], mean=m0, sd=s0)
+      l_unob_y2 <- pred_values * dnorm(S[-id.t], mean=m1, sd=s1)
+    }
+    l_unob <- sum(log(l_unob_y1 + l_unob_y2))
+    
+    # combine likelihoods
+    l <- l_ob + l_unob
+    
   } else {
-    l_ob_y11 <- Y[id.t] * log(g.logit(Z[id.t, ] %*% alpha))
-    l_ob_y12 <- Y[id.t] * log(dnorm(S[id.t], mean=m1, sd=s1))
-    l_ob_y21 <- (1-Y[id.t]) * log(1-g.logit(Z[id.t,] %*% alpha))
-    l_ob_y22 <- (1-Y[id.t]) * log(dnorm(S[id.t], mean=m0, sd=s0))
-    l_ob <- sum(l_ob_y11 + l_ob_y12 + l_ob_y21 + l_ob_y22)
+    
+    # parameters setup
+    m1 <- exp(theta[(ncol(X)+2)])
+    m0 <- exp(theta[(ncol(X)+3)])
+    s1 <- exp(theta[(ncol(X)+4)])
+    s0 <- exp(theta[(ncol(X)+5)])
+    
+    # labeled likelihood
+    if (length(id.t) == 0) {
+      l_ob <- 0
+    } else {
+      
+      # correct 0s in pred
+      pred_values <- pred[id.t]
+      index0 <- which(pred_values == 0)
+      if (length(index0) > 0) {
+        pred_values[which(pred_values == 0)] <- smalle
+      }
+      pred_values <- unlist(pred_values)
+      # correct 0s in 1-pred
+      pred_values1 <- 1-pred[id.t]
+      index0 <- which(pred_values1 == 0)
+      if (length(index0) > 0) {
+        pred_values1[which(pred_values1 == 0)] <- smalle
+      }
+      pred_values1 <- unlist(pred_values1)
+      
+      # log likelihood calculate
+      l_ob_y11 <- Y[id.t] * log(pred_values)
+      l_ob_y12 <- Y[id.t] * dbeta(S[id.t], shape1=m1, shape2=s1, log = T)
+      l_ob_y21 <- (1-Y[id.t]) * log(pred_values1)
+      l_ob_y22 <- (1-Y[id.t]) * dbeta(S[id.t], shape1=m0, shape2=s0, log = T)
+      l_ob <- sum(l_ob_y11 + l_ob_y12 + l_ob_y21 + l_ob_y22)
+    }
+    
+    # Unlabeled likelihood
+    
+    if (length(id.t) == 0) {
+      
+      # correct 0s in pred
+      pred_values <- pred
+      index0 <- which(pred_values == 0)
+      if (length(index0) > 0) {
+        pred_values[which(pred_values == 0)] <- smalle
+      }
+      pred_values <- unlist(pred_values)
+      # correct 0s in 1-pred
+      pred_values1 <- 1-pred
+      index0 <- which(pred_values1 == 0)
+      if (length(index0) > 0) {
+        pred_values1[which(pred_values1 == 0)] <- smalle
+      }
+      pred_values1 <- unlist(pred_values1)
+      
+      # log likelihood calculate
+      l_unob_y1 <- pred_values1 * dbeta(S, shape1=m0, shape2=s0)
+      l_unob_y2 <- pred_values * dbeta(S, shape1=m1, shape2=s1)
+      
+    } else {
+      
+      # correct 0s in pred
+      pred_values <- pred[-id.t]
+      index0 <- which(pred_values == 0)
+      if (length(index0) > 0) {
+        pred_values[which(pred_values == 0)] <- smalle
+      }
+      pred_values <- unlist(pred_values)
+      # correct 0s in 1-pred
+      pred_values1 <- 1-pred[-id.t]
+      index0 <- which(pred_values1 == 0)
+      if (length(index0) > 0) {
+        pred_values1[which(pred_values1 == 0)] <- smalle
+      }
+      pred_values1 <- unlist(pred_values1)
+      
+      # log likelihood calculate
+      l_unob_y1 <- pred_values1 * dbeta(S[-id.t], shape1=m0, shape2=s0)
+      l_unob_y2 <- pred_values * dbeta(S[-id.t], shape1=m1, shape2=s1)
+    }
+    l_unob <- sum(log(l_unob_y1 + l_unob_y2))
+    
+    # combine likelihoods
+    l <- l_ob + l_unob
   }
-
-  # Unlabeled likelihood
-  if (length(id.t) == 0) {
-    l_unob_y1 <- (1 - g.logit(Z %*% alpha)) * dnorm(S, mean=m0, sd=s0)
-    l_unob_y2 <- g.logit(Z %*% alpha) * dnorm(S, mean=m1, sd=s1)
-  } else {
-    l_unob_y1 <- (1 - g.logit(Z[-id.t,] %*% alpha)) * dnorm(S[-id.t], mean=m0, sd=s0)
-    l_unob_y2 <- g.logit(Z[-id.t,] %*% alpha) * dnorm(S[-id.t], mean=m1, sd=s1)
-  }
-  l_unob <- sum(log(l_unob_y1 + l_unob_y2))
-
-  # combine likelihoods
-  l <- l_ob + l_unob
-
+  
   # return likelihood
   return(l)
 }
@@ -95,11 +240,12 @@ NULL_log_like <- function(Y, X, S, Z, id.t, theta) {
 #' @param Z Covaraites with intercept column design matrix
 #' @param id.t Row id of labeled data.
 #' @param theta Distribution parameters.
+#' @param distri Distribution of S|Y, either "normal" or "beta"
 #' @return Negative log-likelihood function under the null
 #' @export
 
-NULL_nlog_like <- function(Y, X, S, Z, id.t, theta) {
-  return(-NULL_log_like(Y, X, S, Z, id.t, theta))
+NULL_nlog_like <- function(Y, X, S, Z, id.t, theta, distri) {
+  return(-NULL_log_like(Y, X, S, Z, id.t, theta, distri))
 }
 
 
@@ -109,10 +255,11 @@ NULL_nlog_like <- function(Y, X, S, Z, id.t, theta) {
 #' @param X Covaraites with intercept column design matrix
 #' @param id.t Row id of labeled data.
 #' @param weights Weights of the individual in the sample, default treat data equally.
+#' @param distri Distribution of S|Y, either "normal" or "beta"
 #' @return Initial estimates of the parameters
 #' @export
 
-sl_theta = function(Y, S, X, id.t, weights = NULL){
+sl_theta = function(Y, S, X, id.t, weights = NULL, distri){
 
   # prevalence estimate
   if (length(id.t) != 0) {
@@ -136,22 +283,67 @@ sl_theta = function(Y, S, X, id.t, weights = NULL){
   }
 
   # without labeled data, threshold S lower than 20% as labeled controls and greater than 80% as labeled cases
-  if (length(id.t) == 0) {
-    thre_value1 <- quantile(S, 0.8)
-    thre_value2 <- quantile(S, 0.2)
-    m1= mean(S[which(S>thre_value1)])
-    s1= sd(S[which(S>thre_value1)])
-    m0=mean(S[S<thre_value2])
-    s0=sd(S[S<thre_value2])
-  } else{
-    m1= mean(S[id.1])
-    s1= sd(S[id.1])
-    m0=mean(S[id.0])
-    s0=sd(S[id.0])
+  if (distri == "normal") {
+    if (length(id.t) == 0) {
+      thre_value1 <- quantile(S, 0.5)
+      m1= mean(S[which(S>thre_value1)])
+      s1= sd(S[which(S>thre_value1)])
+      m0=mean(S[S<thre_value1])
+      s0=sd(S[S<thre_value1])
+    } else{
+      result <- tryCatch({
+        m1= mean(S[id.1])
+        s1= sd(S[id.1])
+        m0=mean(S[id.0])
+        s0=sd(S[id.0])
+        list(m1 = m1, s1 = s1, m0 = m0, s0 = s0)
+      }, error = function(e) {
+        thre_value1 <- quantile(S, 0.5)
+        m1= mean(S[which(S>thre_value1)])
+        s1= sd(S[which(S>thre_value1)])
+        m0=mean(S[S<thre_value1])
+        s0=sd(S[S<thre_value1])
+        list(m1 = m1, s1 = s1, m0 = m0, m1 = m1)
+      })
+      m1 <- result$m1
+      s1 <- result$s1
+      m0 <- result$m0
+      s0 <- result$s0
+    }
+  } else {
+    if (length(id.t) == 0) {
+      id.1 <- which(S>0.5)
+      id.0 <- which(S<=0.5)
+      paras1 <- EnvStats::ebeta(S[id.1], method = "mle")
+      paras0 <- EnvStats::ebeta(S[id.0], method = "mle")
+    } else{
+      result <- tryCatch({
+        paras1 <- EnvStats::ebeta(S[id.1], method = "mle")
+        paras0 <- EnvStats::ebeta(S[id.0], method = "mle")
+        list(paras1 = paras1, paras0 = paras0)  
+      }, error = function(e) {
+        id.1 <- which(S > 0.5)
+        id.0 <- which(S <= 0.5)
+        paras1 <- EnvStats::ebeta(S[id.1], method = "mle")
+        paras0 <- EnvStats::ebeta(S[id.0], method = "mle")
+        list(paras1 = paras1, paras0 = paras0)
+      })
+      paras1 <- result$paras1
+      paras0 <- result$paras0
+    }
+    m1 <- paras1$parameters[1]
+    s1 <- paras1$parameters[2]
+    m0 <- paras0$parameters[1]
+    s0 <- paras0$parameters[2]
   }
 
   # initial estimates of the parameters
-  init_est <- c(alpha = alpha, m1 = m1, logs1 = log(s1), m0 = m0, logs0 = log(s0))
+  if (distri == "normal") {
+    init_est <- c(alpha = alpha, m1 = m1, logs1 = log(s1), m0 = m0, logs1 = log(s0))
+  } else {
+    init_est <- c(alpha = alpha, logm1 = log(m1), logs1 = log(s1), logm0 = log(m0), logs0 = log(s0))
+  }
+  
   return(init_est)
 }
 
@@ -166,37 +358,41 @@ sl_theta = function(Y, S, X, id.t, weights = NULL){
 #' @param full_eval Full optimization iteration, default to be TRUE.
 #' @param NULL_nlog_like Function to be optimized, predefined as negative log-likelihood function under the null
 #' @param nit Number of iteration for optimization if full_NR_evaluation is FALSE.
+#' @param distri Distribution of S|Y, either "normal" or "beta"
 #' @return Final estimates of the parameters
 #' @export
 
 ssl_theta <- function(Y, X, S, Z, id.t, weights = NULL,
                       full_eval = TRUE, NULL_nlog_like,
-                      nit) {
+                      nit, distri) {
 
 
   # initial estimates of the parameters
-  init_sl = sl_theta(Y, S, X, id.t, weights)
+  init_sl = sl_theta(Y, S, X, id.t, weights = NULL, distri)
 
   # final estimates maximizing likelihood
   if (full_eval){
-    optim_temp <- tryCatch(optim(par=init_sl, fn=NULL_nlog_like, Y = Y, X = X, S = S, Z = Z, id.t=id.t,
-                                 method="BFGS"), error=function(e) NA)
+    optim_temp <- tryCatch(optim(par=init_sl, fn=NULL_nlog_like, Y = Y, X = X, S = S, Z = Z, id.t=id.t, distri=distri,
+                                 method="Nelder-Mead"), error=function(e) NA)
     if (length(optim_temp) == 1) {
-      warning("Switched from BFGS to SANN in optim")
-      optim_temp <- tryCatch(optim(par=init_sl, fn=NULL_nlog_like, Y = Y, X = X, S = S, Z = Z, id.t=id.t,
+      warning("Switched from Nelder-Mead to SANN in optim")
+      optim_temp <- tryCatch(optim(par=init_sl, fn=NULL_nlog_like, Y = Y, X = X, S = S, Z = Z, id.t=id.t, distri=distri,
                                    method="SANN"), error=function(e) NA)
     }
     final_est <- optim_temp$par
     converge_steps <- optim_temp$counts[2]
+    convergence_status <- optim_temp$convergence
   } else {
-    optim_temp <- tryCatch(optim(par=init_sl, fn=NULL_nlog_like, Y = Y, X = X, S = S, Z = Z, id.t=id.t,
+    optim_temp <- tryCatch(optim(par=init_sl, fn=NULL_nlog_like, Y = Y, X = X, S = S, Z = Z, id.t=id.t, distri=distri,
                                  method="BFGS", control = list(maxit=nit)), error=function(e) NA)
     final_est <- optim_temp$par
     converge_steps <- optim_temp$counts[2]
+    convergence_status <- optim_temp$convergence
   }
 
   # final parameter estimates
-  return(list(final_est = final_est, converge_steps = converge_steps, l_value = optim_temp$value))
+  return(list(final_est = final_est, converge_steps = converge_steps, l_value = optim_temp$value, 
+              convergence_status = convergence_status))
 }
 
 
@@ -207,23 +403,38 @@ ssl_theta <- function(Y, X, S, Z, id.t, weights = NULL,
 #' @param Z Covaraites with intercept column design matrix
 #' @param id.t Row id of labeled data.
 #' @param theta Distribution parameters
+#' @param distri Distribution of S|Y, either "normal" or "beta"
 #' @return c value to be used in score function
 #' @export
 
-c_func <- function(Y, X, S, Z, id.t, theta) {
-  # parameters setup
-  alpha <- theta[1:(ncol(X)+1)]
-  m1 <- theta[(ncol(X)+2)]
-  m0 <- theta[(ncol(X)+3)]
-  s1 <- exp(theta[(ncol(X)+4)])
-  s0 <- exp(theta[(ncol(X)+5)])
+c_func <- function(Y, X, S, Z, id.t, theta, distri) {
   
+  if (distri == "normal") {
+    # parameters setup
+    alpha <- theta[1:(ncol(X)+1)]
+    m1 <- theta[(ncol(X)+2)]
+    m0 <- theta[(ncol(X)+3)]
+    s1 <- exp(theta[(ncol(X)+4)])
+    s0 <- exp(theta[(ncol(X)+5)])
+  } else {
+    # parameters setup
+    alpha <- theta[1:(ncol(X)+1)]
+    m1 <- exp(theta[(ncol(X)+2)])
+    m0 <- exp(theta[(ncol(X)+3)])
+    s1 <- exp(theta[(ncol(X)+4)])
+    s0 <- exp(theta[(ncol(X)+5)])
+  }
+ 
   # c value in score function
   if (length(id.t) == 0) {
     eta2 = Z %*% alpha
-    
-    f0 <- dnorm(S, mean=m0, sd=s0)
-    f1 <- dnorm(S, mean=m1, sd=s1)
+    if (distri == "normal") {
+      f0 <- dnorm(S, mean=m0, sd=s0)
+      f1 <- dnorm(S, mean=m1, sd=s1)
+    } else {
+      f0 <- dbeta(S, shape1=m0, shape2=s0)
+      f1 <- dbeta(S, shape1=m1, shape2=s1)
+    }
     
     c2 = ((f1-f0)*g.logit(eta2)*(1-g.logit(eta2)))/(g.logit(eta2)*f1+(1-g.logit(eta2))*f0)
     
@@ -233,8 +444,13 @@ c_func <- function(Y, X, S, Z, id.t, theta) {
     eta1 = Z[id.t,] %*% alpha
     eta2 = Z[-id.t,] %*% alpha
     
-    f0 <- dnorm(S[-id.t], mean=m0, sd=s0)
-    f1 <- dnorm(S[-id.t], mean=m1, sd=s1)
+    if (distri == "normal") {
+      f0 <- dnorm(S[-id.t], mean=m0, sd=s0)
+      f1 <- dnorm(S[-id.t], mean=m1, sd=s1)
+    } else {
+      f0 <- dbeta(S[-id.t], shape1=m0, shape2=s0)
+      f1 <- dbeta(S[-id.t], shape1=m1, shape2=s1)
+    }
     
     c1 = (Y[id.t] - g.logit(eta1))
     c2 = ((f1-f0)*g.logit(eta2)*(1-g.logit(eta2)))/(g.logit(eta2)*f1+(1-g.logit(eta2))*f0)

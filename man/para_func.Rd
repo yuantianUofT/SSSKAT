@@ -4,7 +4,7 @@
 \alias{para_func}
 \title{Parametric boostrap function for individual c values}
 \usage{
-para_func(nn, theta, Y, X, S, Z, id.t)
+para_func(nn, theta, Y, X, S, Z, id.t, distri)
 }
 \arguments{
 \item{nn}{Number of samples}
@@ -20,6 +20,8 @@ para_func(nn, theta, Y, X, S, Z, id.t)
 \item{Z}{Covaraites with intercept column design matrix}
 
 \item{id.t}{Row id of labeled data.}
+
+\item{distri}{Distribution of S|Y, either "normal" or "beta"}
 }
 \value{
 Parametric boostrapped individual c values

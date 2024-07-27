@@ -20,7 +20,9 @@ SS_test(
   nit = NULL,
   NULL_nlog_like,
   testtype = "all",
-  boot = T
+  boot = T,
+  distri,
+  theta = NULL
 )
 }
 \arguments{
@@ -55,6 +57,10 @@ SS_test(
 \item{testtype}{Type of test, default is "all", can also be "SKAT", "Burden", "ACAT".}
 
 \item{boot}{Whether perform parametric bootstrap, default is TRUE.}
+
+\item{distri}{Distribution of S|Y, either "normal" or "beta"}
+
+\item{theta}{Value of estimated parameters, default is NULL.}
 }
 \value{
 Total sample size, parameter estimates, SS scores, SS score variance, SS pvalues, weights used in each test and weights.beta.

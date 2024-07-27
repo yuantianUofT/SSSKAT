@@ -15,7 +15,8 @@ STAAR_SS(
   rv_num_cutoff,
   mac.thresh,
   boot = T,
-  para_results
+  para_results,
+  distri
 )
 }
 \arguments{
@@ -40,6 +41,8 @@ STAAR_SS(
 \item{boot}{Parametric Bootstrapping}
 
 \item{para_results}{Saved parametric Bootstrapping results}
+
+\item{distri}{Distribution of S|Y, either "normal" or "beta"}
 }
 \value{
 STAAR SS, naive, thesholded, labeled, oracle results

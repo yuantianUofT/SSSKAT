@@ -4,7 +4,7 @@
 \alias{sl_theta}
 \title{Initial parameter estimates under the null}
 \usage{
-sl_theta(Y, S, X, id.t, weights = NULL)
+sl_theta(Y, S, X, id.t, weights = NULL, distri)
 }
 \arguments{
 \item{Y}{Binary response variable}
@@ -16,6 +16,8 @@ sl_theta(Y, S, X, id.t, weights = NULL)
 \item{id.t}{Row id of labeled data.}
 
 \item{weights}{Weights of the individual in the sample, default treat data equally.}
+
+\item{distri}{Distribution of S|Y, either "normal" or "beta"}
 }
 \value{
 Initial estimates of the parameters

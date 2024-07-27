@@ -19,6 +19,7 @@
 #' @param mac.thresh MAC threshold
 #' @param boot Parametric Bootstrapping
 #' @param para_results Saved parametric Bootstrapping results
+#' @param distri Distribution of S|Y, either "normal" or "beta"
 #' @return All comparison results
 #' @export
 
@@ -152,7 +153,7 @@ plof_SS <- function(chr, gene_name, genofile, obj_SS, genes,
 
 	SS_result <- STAAR_SS(genotype=Geno, para_results = para_results, phen=phen, surro=surro, covar=covar, id.t=id.t, annotation_phred = NULL,
 	                      rare_maf_cutoff=rare_maf_cutoff, rv_num_cutoff=rv_num_cutoff, mac.thresh=mac.thresh,
-	                      boot=boot)
+	                      boot=boot, distri=distri)
 	SS_p_STAARO <- ACAT(Pvals = c(SS_result$results_SS_1_1$pvalue, SS_result$results_SS_1_25$pvalue))
 	naive_p_STAARO <- ACAT(Pvals = c(SS_result$results_naive_1_1$pvalue, SS_result$results_naive_1_25$pvalue))
 	thresholded_p_STAARO <- ACAT(Pvals = c(SS_result$results_thresholded_1_1$pvalue, SS_result$results_thresholded_1_25$pvalue))

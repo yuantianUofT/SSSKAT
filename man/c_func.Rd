@@ -4,7 +4,7 @@
 \alias{c_func}
 \title{c value calculation to be used in score function}
 \usage{
-c_func(Y, X, S, Z, id.t, theta)
+c_func(Y, X, S, Z, id.t, theta, distri)
 }
 \arguments{
 \item{Y}{Binary response variable}
@@ -18,6 +18,8 @@ c_func(Y, X, S, Z, id.t, theta)
 \item{id.t}{Row id of labeled data.}
 
 \item{theta}{Distribution parameters}
+
+\item{distri}{Distribution of S|Y, either "normal" or "beta"}
 }
 \value{
 c value to be used in score function
