@@ -41,7 +41,7 @@ para_func <- function(nn, theta, Y, X, S, Z, id.t, distri) {
     para_S[para_Y == 1] <- rbeta(n = sum(para_Y), shape1 = m1, shape2 = s1)
     para_S[para_Y == 0] <- rbeta(n = sum(para_Y == 0), shape1 = m0, shape2 = s0)
   }
-  smalle <- Rmpfr::mpfr(1e-35, precBits=128)
+  smalle <- 1e-35
   if (length(which(para_S == 1)) > 0) {
     para_S[which(para_S == 1)] <- max(para_S[para_S != 1])
   } 
