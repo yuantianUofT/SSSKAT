@@ -21,7 +21,8 @@ plof_SS(
   rv_num_cutoff = 1,
   mac.thresh = 10,
   boot = T,
-  para_results
+  para_results,
+  distri
 )
 }
 \arguments{

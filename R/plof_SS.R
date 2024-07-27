@@ -28,7 +28,7 @@ plof_SS <- function(chr, gene_name, genofile, obj_SS, genes,
                     Annotation_dir="annotation/info/FunctionalAnnotation", Annotation_name_catalog,
                     Use_annotation_weights=c(TRUE,FALSE), Annotation_name=NULL,
                     rare_maf_cutoff = 0.01, rv_num_cutoff = 1, mac.thresh = 10,
-                    boot = T, para_results){
+                    boot = T, para_results, distri){
 
 	## evaluate choices
 	variant_type <- match.arg(variant_type)
