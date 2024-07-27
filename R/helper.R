@@ -52,7 +52,7 @@ y.p_NULL <- function(a, b, x) {
 NULL_log_like <- function(Y, X, S, Z, id.t, theta, distri) {
   
   alpha <- theta[1:(ncol(X)+1)]
-  smalle <- as.numeric(Rmpfr::mpfr(1e-35, precBits=128))
+  smalle <- 1e-35
   # predicted values under the null
   pred <- g.logit(Z %*% alpha)
   pred <- as.vector(pred)
