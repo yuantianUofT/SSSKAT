@@ -165,7 +165,7 @@ plof_SS <- function(chr, gene_name, genofile, obj_SS, genes,
 	}
 	
 
-	results <- c(NA, 40)
+	results <- c(NA, 41)
 	results[3] <- "plof"
 	results[2] <- chr
 	results[1] <- as.character(genes[kk,1])
@@ -186,12 +186,13 @@ plof_SS <- function(chr, gene_name, genofile, obj_SS, genes,
 	  results[34:39] <- c(SS_result$results_labeled_1_1$pvalue, SS_result$results_labeled_1_25$pvalue)
 	  results[40] <- labeled_p_STAARO
 	}
+	results[41] <- distri
 	
 	results <- as.data.frame(t(results))
 	
-	if(!is.null(results)) {
+	if (!is.null(results)) {
 	  colnames(results)[1:5] <- c("Gene name","Chr","Category","#SNV","cMAC")
-	  colnames(results)[6:dim(results)[2]] <- c("SS_SKAT_p_1_1", "SS_Burden_p_1_1", "SS_ACAT_V_p_1_1", 
+	  colnames(results)[6:(dim(results)[2]-1)] <- c("SS_SKAT_p_1_1", "SS_Burden_p_1_1", "SS_ACAT_V_p_1_1", 
 	                                            "SS_SKAT_p_1_25", "SS_Burden_p_1_25", "SS_ACAT_V_p_1_25", 
 	                                            "SS_STAAR-O", 
 	                                            "Naive_SKAT_p_1_1", "Naive_Burden_p_1_1", "Naive_ACAT_V_p_1_1",
@@ -206,6 +207,7 @@ plof_SS <- function(chr, gene_name, genofile, obj_SS, genes,
 	                                            "Labeled_SKAT_p_1_1", "Labeled_Burden_p_1_1", "Labeled_ACAT_V_p_1_1",
 	                                            "Labeled_SKAT_p_1_25", "Labeled_Burden_p_1_25", "Labeled_ACAT_V_p_1_25",
 	                                            "Labeled_STAAR-O")
+	  colnames(results)[dim(results)[2]] <- "Parametric distribution"
 	}
 	results_list <- list(results = results, SS_result = SS_result)
 
