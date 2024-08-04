@@ -339,7 +339,7 @@ sl_theta = function(Y, S, X, id.t, weights = NULL, distri){
 
   # initial estimates of the parameters
   if (distri == "normal") {
-    init_est <- c(alpha = alpha, m1 = m1, logs1 = log(s1), m0 = m0, logs1 = log(s0))
+    init_est <- c(alpha = alpha, m1 = m1, logs1 = log(s1), m0 = m0, logs0 = log(s0))
   } else {
     init_est <- c(alpha = alpha, logm1 = log(m1), logs1 = log(s1), logm0 = log(m0), logs0 = log(s0))
   }
