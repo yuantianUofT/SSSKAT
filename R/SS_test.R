@@ -72,6 +72,7 @@ SS_test <- function(Y, X, G, S, id.t, para_results,
     Burdenscore <- BurdenQ_fun(G, cvalue, wBurden)
     ACATscore <- ACATsingleQ_fun(G, cvalue)
     scoreQ <- list(SKATscoreQ = SKATscore$Q, BurdenscoreQ = Burdenscore$Q, ACATscoreQs = ACATscore$Q)
+    scores <- list(SKATscores = SKATscore$score, Burdenscores = Burdenscore$score, ACATscores = ACATscore$score)
     
     # Scovs
     if (boot == T) {
@@ -101,6 +102,7 @@ SS_test <- function(Y, X, G, S, id.t, para_results,
     # scores
     SKATscore <- SKATQ_fun(G, cvalue, wSKAT)
     scoreQ <- list(SKATscoreQ = SKATscore$Q)
+    scores <- list(SKATscores = SKATscore$score)
     
     # Scovs
     if (boot == T) {
@@ -123,6 +125,7 @@ SS_test <- function(Y, X, G, S, id.t, para_results,
     # scores
     Burdenscore <- BurdenQ_fun(G, cvalue, wBurden)
     scoreQ <- list(BurdenscoreQ = Burdenscore$Q)
+    scores <- list(Burdenscores = Burdenscore$score)
     
     # Scovs
     if (boot == T) {
@@ -144,6 +147,7 @@ SS_test <- function(Y, X, G, S, id.t, para_results,
     # scores
     ACATscore <- ACATsingleQ_fun(G, cvalue)
     scoreQ <- list(ACATscoreQs = ACATscore$Q)
+    scores <- list(ACATscores = ACATscore$score)
     
     # Scovs
     if (boot == T) {
@@ -166,7 +170,7 @@ SS_test <- function(Y, X, G, S, id.t, para_results,
   }
   
   # final results
-  results <- list(nobs = nrow(G), theta_est = theta, scoreQ = scoreQ, pvalue = pvalue, 
+  results <- list(nobs = nrow(G), theta_est = theta, scoreQ = scoreQ, scores = scores, pvalue = pvalue, 
                   Scovs = Scovs, weights = weights, weights.beta = weights.beta)
   
   return(results)

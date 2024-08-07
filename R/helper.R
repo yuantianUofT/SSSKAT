@@ -1066,3 +1066,19 @@ SimesP <- function(ps) {
   return(pvalue)
 }
 
+# Function to perform rank-based inverse normal transformation
+#' @param x A numeric vector to the normalized
+#' @param k quantile used to match quantile, default is 0.375
+#' @return inv.x A numeric vector of the normalized values
+#' @export
+#' 
+rank_inverse_normal <- function(x, k = 0.375) {
+  
+  n <- length(x)
+  
+  ranks <- rank(x, ties.method = "average")  # handling ties by averaging
+  inv.x <- qnorm((ranks - k) / (n - 2 * k + 1))
+  
+  return(inv.x)
+}
+
