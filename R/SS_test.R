@@ -171,7 +171,8 @@ SS_test <- function(Y, X, G, S, id.t, para_results,
   
   # final results
   results <- list(nobs = nrow(G), theta_est = theta, scoreQ = scoreQ, scores = scores, pvalue = pvalue, 
-                  Scovs = Scovs, weights = weights, weights.beta = weights.beta)
+                  Scovs = Scovs, weights = weights, weights.beta = weights.beta, 
+                  ACATpvalues = ACATpvalues, cvalue = cvalue)
   
   return(results)
 }

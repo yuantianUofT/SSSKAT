@@ -373,9 +373,9 @@ ssl_theta <- function(Y, X, S, Z, id.t, weights = NULL,
   # final estimates maximizing likelihood
   if (full_eval){
     optim_temp <- tryCatch(optim(par=init_sl, fn=NULL_nlog_like, Y = Y, X = X, S = S, Z = Z, id.t=id.t, distri=distri,
-                                 method="Nelder-Mead"), error=function(e) NA)
+                                 method="BFGS"), error=function(e) NA)
     if (length(optim_temp) == 1) {
-      warning("Switched from Nelder-Mead to SANN in optim")
+      warning("Switched from BFGS to SANN in optim")
       optim_temp <- tryCatch(optim(par=init_sl, fn=NULL_nlog_like, Y = Y, X = X, S = S, Z = Z, id.t=id.t, distri=distri,
                                    method="SANN"), error=function(e) NA)
     }
