@@ -276,10 +276,16 @@ sl_theta = function(Y, S, X, id.t, weights = NULL, distri){
   id.0 = intersect(which(Y==0), id.t)
 
   # with some labeled data, under the null hypothesis, get supervised estimates
-  if (length(id.t) == 0) {
-    alpha=lm(S~X)$coef
+  if (length(id.t) != 0) {
+    model=glm(Y[id.t] ~ X[id.t, ],family=binomial(link = "logit"), weights = weights)
+    if (!model$converged) {
+      warning("GLM Model did not converge")
+      alpha=lm(S~X)$coef
+    } else {
+      alpha=model$coef
+      }
   } else{
-    alpha=glm(Y[id.t] ~ X[id.t, ],family=binomial(link = "logit"), weights = weights)$coef
+    alpha=lm(S~X)$coef
   }
 
   # without labeled data, threshold S lower than 20% as labeled controls and greater than 80% as labeled cases

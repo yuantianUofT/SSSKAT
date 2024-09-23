@@ -70,7 +70,7 @@ naive_test <- function(X, G, S, id.t, wBurden = NULL, wSKAT = NULL, wACAT = NULL
     }
     
     # SKAT and Burden NULL model
-    obj.S <- SKAT_Null_Model(S ~ X, out_type="D", Adjustment = F)
+    obj.S <- SKAT_Null_Model(S ~ X, out_type="C", Adjustment = F)
     # Burden results
     Burden_result <- SKAT(G, obj.S, method="davies", r.corr = 1, weights=wBurden)
     
