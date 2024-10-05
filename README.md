@@ -1,12 +1,10 @@
 # SS-STAAR
 R package for Semi-Supervised STAAR and Semi-Supervised gene-based association tests
 
-# Installation
+# Installation and example
 ```r
   devtools::install_github(repo = "https://github.com/yuantianUofT/SSSKAT")
 
-# Example
-```r
   # generate covariates
    X <- cbind(rnorm(100000), rbinom(100000, 1, 0.5))
   # generate phenotype
