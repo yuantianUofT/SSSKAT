@@ -33,7 +33,7 @@ R package for Semi-Supervised STAAR and Semi-Supervised gene-based association t
      out_i <- SSSKAT::para_func(nn = ntotal, theta = para_est$final_est, Y = Y,
                                  X = X, S = S, Z = cbind(1, X), id.t = id.t, distri = "normal")
      para_results <- rbind(para_results, out_i)
-     }
+   }
 
   # Obtain SS-RV test pvalues
    SS_result <- SSSKAT::SS_test(Y = Y, para_results = para_results, X = X, G = G, S = S, id.t = id.t,
