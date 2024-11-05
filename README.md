@@ -30,7 +30,7 @@ R package for Semi-Supervised STAAR and Semi-Supervised gene-based association t
    for (i in 1:5) {
      simseed <- i
      set.seed(simseed)
-     out_i <- SSSKAT::para_func(nn = ntotal, theta = para_est$final_est, Y = Y,
+     out_i <- SSSKAT::para_func(nn = 100000, theta = para_est$final_est, Y = Y,
                                  X = X, S = S, Z = cbind(1, X), id.t = id.t, distri = "normal")$para_cvalue_est
      para_results <- rbind(para_results, out_i)
    }
