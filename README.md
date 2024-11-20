@@ -30,8 +30,8 @@ R package for Semi-Supervised STAAR and Semi-Supervised gene-based association t
    for (i in 1:5) {
      simseed <- i
      set.seed(simseed)
-     out_i <- SSSKAT::para_func(nn = ntotal, theta = para_est$final_est, Y = Y,
-                                 X = X, S = S, Z = cbind(1, X), id.t = id.t, distri = "normal")
+     out_i <- SSSKAT::para_func(nn = 100000, theta = para_est$final_est, Y = Y,
+                                 X = X, S = S, Z = cbind(1, X), id.t = id.t, distri = "normal")$para_cvalue_est
      para_results <- rbind(para_results, out_i)
    }
 
@@ -40,6 +40,6 @@ R package for Semi-Supervised STAAR and Semi-Supervised gene-based association t
                                   wBurden = rep(1, 50), wSKAT = rep(1, 50), wACAT = rep(1, 50),
                                   weights.beta = NULL, mac.thresh = 10,
                                   full_NR_evaluation = TRUE, nit = NULL, NULL_nlog_like,
-                                  testtype = "all", boot = T, theta = para_est$final_est, distri = normal)
+                                  testtype = "all", boot = T, theta = para_est$final_est, distri = "normal")
   # Combine SS-RV test results to SS-STAAR result
    SS_p_STAARO <- ACAT(Pvals = c(SS_result$pvalue))
