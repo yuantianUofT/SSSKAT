@@ -28,11 +28,14 @@ SS_test <- function(Y, X, G, S, id.t, para_results,
                     wBurden = NULL, wSKAT = NULL, wACAT = NULL, weights.beta = NULL, mac.thresh = 10,
                     full_NR_evaluation = TRUE, nit = NULL, NULL_nlog_like, 
                     testtype = "all", boot = T, distri, theta = NULL) {
+  
   if (! testtype %in% c("all", "SKAT", "Burden", "ACAT")) {
     stop("testtype is not correctly specified")
   }
+  
   # data preparation
   Z <- data.matrix(cbind(1, X))
+  # filter very rare variants for ACAT
   if (testtype %in% c("all", "ACAT")) {
     is.very.rare <- rare_func(G, mac.thresh)
   }
@@ -70,7 +73,7 @@ SS_test <- function(Y, X, G, S, id.t, para_results,
     # scores
     SKATscore <- SKATQ_fun(G, cvalue, wSKAT)
     Burdenscore <- BurdenQ_fun(G, cvalue, wBurden)
-    ACATscore <- ACATsingleQ_fun(G, cvalue)
+    ACATscore <- ACATQ_fun(G, cvalue, mac.thresh, is.very.rare, wBurden)
     scoreQ <- list(SKATscoreQ = SKATscore$Q, BurdenscoreQ = Burdenscore$Q, ACATscoreQs = ACATscore$Q)
     scores <- list(SKATscores = SKATscore$score, Burdenscores = Burdenscore$score, ACATscores = ACATscore$score)
     

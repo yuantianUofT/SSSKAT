@@ -81,11 +81,11 @@ STAAR_SS <- function(genotype, phen, surro, covar, id.t, annotation_phred = NULL
     weights_2 <- list(w_B_2 = as.vector(w_B_2), w_S_2 = as.vector(w_S_2), w_A_2 = as.vector(w_A_2))
     
     ## SS
-    SS_result1 <- SS_test(Y = phen, para_results = para_results, X = covar, G = G, S = surro, id.t = id.t, wBurden = weights_1$w_B_1, wSKAT = weights_1$w_S_1, wACAT = weights_1$w_A_1, 
+    SS_result1 <- SS_test(Y = phen, para_results = para_results, X = covar, G = G, S = surro, id.t = id.t, wBurden = weights_1$w_B_1, wSKAT = weights_1$w_S_1, wACAT = NULL, 
                           weights.beta = c(1, 25), mac.thresh = 10,
                           full_NR_evaluation = TRUE, nit = NULL, NULL_nlog_like, 
                           testtype = "all", boot = boot, distri = distri) 
-    SS_result2 <- SS_test(Y = phen, para_results = para_results, X = covar, G = G, S = surro, id.t = id.t, wBurden = weights_2$w_B_2, wSKAT = weights_2$w_S_2, wACAT = weights_2$w_A_2, 
+    SS_result2 <- SS_test(Y = phen, para_results = para_results, X = covar, G = G, S = surro, id.t = id.t, wBurden = weights_2$w_B_2, wSKAT = weights_2$w_S_2, wACAT = NULL, 
                           weights.beta = c(1, 25), mac.thresh = 10,
                           full_NR_evaluation = TRUE, nit = NULL, NULL_nlog_like, 
                           testtype = "all", boot = boot, distri = distri) 
