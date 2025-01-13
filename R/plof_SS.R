@@ -150,69 +150,90 @@ plof_SS <- function(chr, gene_name, genofile, obj_SS, genes,
 	# 		colnames(Anno.Int.PHRED.sub) <- Anno.Int.PHRED.sub.name
 	# 	}
 	# }
-
-	SS_result <- STAAR_SS(genotype=Geno, para_results = para_results, phen=phen, surro=surro, covar=covar, id.t=id.t, annotation_phred = NULL,
-	                      rare_maf_cutoff=rare_maf_cutoff, rv_num_cutoff=rv_num_cutoff, mac.thresh=mac.thresh,
-	                      boot=boot, distri=distri)
-	SS_p_STAARO <- ACAT(Pvals = c(SS_result$results_SS_1_1$pvalue, SS_result$results_SS_1_25$pvalue))
-	naive_p_STAARO <- ACAT(Pvals = c(SS_result$results_naive_1_1$pvalue, SS_result$results_naive_1_25$pvalue))
-	thresholded_p_STAARO <- ACAT(Pvals = c(SS_result$results_thresholded_1_1$pvalue, SS_result$results_thresholded_1_25$pvalue))
-	oracle_p_STAARO <- ACAT(Pvals = c(SS_result$results_oracle_1_1$pvalue, SS_result$results_oracle_1_25$pvalue))
-	if (any(is.na(c(SS_result$results_labeled_1_1, SS_result$results_labeled_1_25)))) {
-	  labeled_p_STAARO <- NA
-	} else {
-	  labeled_p_STAARO <- ACAT(Pvals = c(SS_result$results_labeled_1_1$pvalue, SS_result$results_labeled_1_25$pvalue))
-	}
 	
-
-	results <- c(NA, 41)
-	results[3] <- "plof"
-	results[2] <- chr
-	results[1] <- as.character(genes[kk,1])
-	results[4] <- SS_result$num_variant
-	results[5] <- SS_result$cMAC
-	results[6:11] <- c(SS_result$results_SS_1_1$pvalue, SS_result$results_SS_1_25$pvalue)
-	results[12] <- SS_p_STAARO
-	results[13:18] <- c(SS_result$results_naive_1_1$pvalue, SS_result$results_naive_1_25$pvalue)
-	results[19] <- naive_p_STAARO
-	results[20:25] <- c(SS_result$results_thresholded_1_1$pvalue, SS_result$results_thresholded_1_25$pvalue)
-	results[26] <- thresholded_p_STAARO
-	results[27:32] <- c(SS_result$results_oracle_1_1$pvalue, SS_result$results_oracle_1_25$pvalue)
-	results[33] <- oracle_p_STAARO
-	if (any(is.na(c(SS_result$results_labeled_1_1, SS_result$results_labeled_1_25)))) {
-	  results[34:39] <- NA
-	  results[40] <- NA
-	} else {
-	  results[34:39] <- c(SS_result$results_labeled_1_1$pvalue, SS_result$results_labeled_1_25$pvalue)
-	  results[40] <- labeled_p_STAARO
-	}
-	results[41] <- distri
-	
-	results <- as.data.frame(t(results))
+	results <- NULL
+	tryCatch({
+	  SS_result <- STAAR_SS(genotype=Geno, para_results = para_results, phen=phen, surro=surro, covar=covar, id.t=id.t, annotation_phred = NULL,
+	                        rare_maf_cutoff=rare_maf_cutoff, rv_num_cutoff=rv_num_cutoff, mac.thresh=mac.thresh,
+	                        boot=boot, distri=distri)
+	  if(inherits(SS_result, "list")) {
+	    SS_p_STAARO <- ACAT(Pvals = c(SS_result$results_SS_1_1$pvalue, SS_result$results_SS_1_25$pvalue))
+	    naive_p_STAARO <- ACAT(Pvals = c(SS_result$results_naive_1_1$pvalue, SS_result$results_naive_1_25$pvalue))
+	    thresholded_p_STAARO <- ACAT(Pvals = c(SS_result$results_thresholded_1_1$pvalue, SS_result$results_thresholded_1_25$pvalue))
+	    oracle_p_STAARO <- ACAT(Pvals = c(SS_result$results_oracle_1_1$pvalue, SS_result$results_oracle_1_25$pvalue))
+	    if (any(is.na(c(SS_result$results_labeled_1_1, SS_result$results_labeled_1_25)))) {
+	      labeled_p_STAARO <- NA
+	    } else {
+	      labeled_p_STAARO <- ACAT(Pvals = c(SS_result$results_labeled_1_1$pvalue, SS_result$results_labeled_1_25$pvalue))
+	    }
+	  }
+	  
+	  if (inherits(SS_result, "list")) {
+	    results <- c(NA, 41)
+	    results[3] <- "plof"
+	    results[2] <- chr
+	    results[1] <- as.character(genes[kk,1])
+	    results[4] <- SS_result$num_variant
+	    results[5] <- SS_result$cMAC
+	    results[6:11] <- c(SS_result$results_SS_1_1$pvalue, SS_result$results_SS_1_25$pvalue)
+	    results[12] <- SS_p_STAARO
+	    results[13:18] <- c(SS_result$results_naive_1_1$pvalue, SS_result$results_naive_1_25$pvalue)
+	    results[19] <- naive_p_STAARO
+	    results[20:25] <- c(SS_result$results_thresholded_1_1$pvalue, SS_result$results_thresholded_1_25$pvalue)
+	    results[26] <- thresholded_p_STAARO
+	    results[27:32] <- c(SS_result$results_oracle_1_1$pvalue, SS_result$results_oracle_1_25$pvalue)
+	    results[33] <- oracle_p_STAARO
+	    if (any(is.na(c(SS_result$results_labeled_1_1, SS_result$results_labeled_1_25)))) {
+	      results[34:39] <- NA
+	      results[40] <- NA
+	    } else {
+	      results[34:39] <- c(SS_result$results_labeled_1_1$pvalue, SS_result$results_labeled_1_25$pvalue)
+	      results[40] <- labeled_p_STAARO
+	    }
+	    results[41] <- distri
+	    results <- as.data.frame(t(results))
+	    
+	    if (!is.null(results)) {
+	      colnames(results)[1:5] <- c("Gene name","Chr","Category","#SNV","cMAC")
+	      colnames(results)[6:(dim(results)[2]-1)] <- c("SS_SKAT_p_1_1", "SS_Burden_p_1_1", "SS_ACAT_V_p_1_1", 
+	                                                    "SS_SKAT_p_1_25", "SS_Burden_p_1_25", "SS_ACAT_V_p_1_25", 
+	                                                    "SS_STAAR-O", 
+	                                                    "Naive_SKAT_p_1_1", "Naive_Burden_p_1_1", "Naive_ACAT_V_p_1_1",
+	                                                    "Naive_SKAT_p_1_25", "Naive_Burden_p_1_25", "Naive_ACAT_V_p_1_25",
+	                                                    "Naive_STAAR-O",
+	                                                    "Thresholded_SKAT_p_1_1", "Thresholded_Burden_p_1_1", "Thresholded_ACAT_V_p_1_1",
+	                                                    "Thresholded_SKAT_p_1_25", "Thresholded_Burden_p_1_25", "Thresholded_ACAT_V_p_1_25",
+	                                                    "Thresholded_STAAR-O",
+	                                                    "Oracle_SKAT_p_1_1", "Oracle_Burden_p_1_1", "Oracle_ACAT_V_p_1_1",
+	                                                    "Oracle_SKAT_p_1_25", "Oracle_Burden_p_1_25", "Oracle_ACAT_V_p_1_25",
+	                                                    "Oracle_STAAR-O",
+	                                                    "Labeled_SKAT_p_1_1", "Labeled_Burden_p_1_1", "Labeled_ACAT_V_p_1_1",
+	                                                    "Labeled_SKAT_p_1_25", "Labeled_Burden_p_1_25", "Labeled_ACAT_V_p_1_25",
+	                                                    "Labeled_STAAR-O")
+	      colnames(results)[dim(results)[2]] <- "Parametric distribution"
+	    }
+	  }
+	},
+	warning = function(w) {
+	  print(paste("Warning:", w$message))
+	},
+	error = function(e) {
+	  print(paste("Error:", e$message))
+	})
 	
 	if (!is.null(results)) {
-	  colnames(results)[1:5] <- c("Gene name","Chr","Category","#SNV","cMAC")
-	  colnames(results)[6:(dim(results)[2]-1)] <- c("SS_SKAT_p_1_1", "SS_Burden_p_1_1", "SS_ACAT_V_p_1_1", 
-	                                            "SS_SKAT_p_1_25", "SS_Burden_p_1_25", "SS_ACAT_V_p_1_25", 
-	                                            "SS_STAAR-O", 
-	                                            "Naive_SKAT_p_1_1", "Naive_Burden_p_1_1", "Naive_ACAT_V_p_1_1",
-	                                            "Naive_SKAT_p_1_25", "Naive_Burden_p_1_25", "Naive_ACAT_V_p_1_25",
-	                                            "Naive_STAAR-O",
-	                                            "Thresholded_SKAT_p_1_1", "Thresholded_Burden_p_1_1", "Thresholded_ACAT_V_p_1_1",
-	                                            "Thresholded_SKAT_p_1_25", "Thresholded_Burden_p_1_25", "Thresholded_ACAT_V_p_1_25",
-	                                            "Thresholded_STAAR-O",
-	                                            "Oracle_SKAT_p_1_1", "Oracle_Burden_p_1_1", "Oracle_ACAT_V_p_1_1",
-	                                            "Oracle_SKAT_p_1_25", "Oracle_Burden_p_1_25", "Oracle_ACAT_V_p_1_25",
-	                                            "Oracle_STAAR-O",
-	                                            "Labeled_SKAT_p_1_1", "Labeled_Burden_p_1_1", "Labeled_ACAT_V_p_1_1",
-	                                            "Labeled_SKAT_p_1_25", "Labeled_Burden_p_1_25", "Labeled_ACAT_V_p_1_25",
-	                                            "Labeled_STAAR-O")
-	  colnames(results)[dim(results)[2]] <- "Parametric distribution"
+	  results_list <- list(results = results, SS_result = SS_result)
+	} else {
+	  results_list <- NULL
 	}
-	results_list <- list(results = results, SS_result = SS_result)
-
+	
 	seqResetFilter(genofile)
-
-	return(results_list)
+  
+	if (!is.null(results_list)) {
+	  return(results_list)
+	} else {
+	  return(invisible())
+	}
+	
 }
 
