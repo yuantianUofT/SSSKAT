@@ -1088,3 +1088,60 @@ rank_inverse_normal <- function(x, k = 0.375) {
   return(inv.x)
 }
 
+# Function to Platt scale
+#' @param S Scores to be calibrated from the training set
+#' @param Y Binary response variable from the training set
+#' @param smooth Whether to smooth the calibration
+#' @return Calibration model
+#' @export
+#' 
+platt_scaling <- function(S, Y, smooth = TRUE) {
+  if (is.null(title)) {
+    title <- "Calibration Plot"
+  }
+  if (smooth) {
+    Npos <- sum(Y == 1)
+    Nneg <- sum(Y == 0)
+    Y <- ifelse(Y == 1,
+                (Npos + 1) / (Npos + 2),
+                1        / (Nneg + 2))
+  }
+  fit <- glm(Y ~ S, family = binomial(link = "logit"))
+  return(fit)
+}
+
+# Function to generate calibration figure
+#' @param S Scores to be calibrated from the training set
+#' @param Y Binary response variable from the training set
+#' @param title Title of the figure
+#' @return Calibration plot
+#' @export
+#'
+Calibration_plot <- function(Y, S, title = NULL) {
+  
+  df <- data.frame(obs = Y, pred = S)
+  
+  df_cal <- df %>%
+    mutate(bin = cut(pred, breaks = seq(0, 1, by = 0.05), include.lowest = TRUE)) %>%
+    group_by(bin) %>%
+    summarize(
+      mean_pred = mean(pred),
+      obs_prop  = mean(obs),
+      n         = n()
+    )
+  
+  calplot <- ggplot(df_cal, aes(x = mean_pred, y = obs_prop)) +
+    geom_line() +
+    geom_point(size = 2) +
+    geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "grey50") +
+    labs(
+      x = "Mean Predicted Probability",
+      y = "Observed Proportion of Positives",
+      title = title
+    ) +
+    scale_x_continuous(limits = c(0,1)) +
+    scale_y_continuous(limits = c(0,1)) +
+    theme_minimal()
+  return(calplot)
+}
+
